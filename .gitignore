@@ -1,0 +1,11 @@
+docs/build/
+docs/src/examples
+*.scss
+*.css
+Manifest.toml
+*.code-workspace
+/benchmark/*.json
+!/benchmark/tune.json
+/.benchmarkci
+*.osm.cache
+src/update_*
