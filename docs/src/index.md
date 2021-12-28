@@ -70,3 +70,5 @@ be elevated to an agent type.
 
 ## Advanced visualization
 The [Sugarscape](@ref) example shows how to animate, in parallel, one plot that shows the ABM evolution, and another plot that shows any quantity a user is interested in.
+
+The [Bacterial Growth](@ref) example shows how to make customized shapes for your agents that change over time as the agents evolve.

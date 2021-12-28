@@ -1,6 +1,5 @@
 # %% Example files
 NEW_EXAMPLES = [
-    "Hegselmann-Krause opinion dynamics" => "hk.jl",
 ]
 ### TEETETETE
 EXISTING_EXAMPLES = [
