@@ -56,7 +56,7 @@ studies where agents are cell analogues.
 
 A subset of ABMs, these models have individual agents with a set of behaviors,
 interacting with neighboring cells and the world around them, but never moving.
-Two famous examples of this model type are [Conway's game of life](@ref) and
+Some examples of this model type are [Conway's game of life](@ref), [Forest fire](@ref) and
 [Daisyworld](@ref).
 
 ## Mixed Models
