@@ -20,7 +20,7 @@ of what is possible on a grid. If you're looking for something simpler, then the
 ## Continuous spaces
 In this space, agents generally move with a given velocity
 and interact in a far smoother manner than grid based models. 
-The [Flock model](https://juliadynamics.github.io/Agents.jl/stable/examples/flock/)
+The [Flocking model](https://juliadynamics.github.io/Agents.jl/stable/examples/flock/)
 is perhaps the most famous example of bottom-up emergent phenomena and is hosted in the main Agents.jl documentation. Something quite
 topical at present is our
 [Continuous space social distancing](@ref) example.
