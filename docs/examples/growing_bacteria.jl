@@ -65,6 +65,7 @@ nothing # hide
 # ## Stepping functions
 
 function model_step!(model)
+    extent = model.space.extent
     for a in allagents(model)
         if a.growthprog ≥ 1
             ## When a cell has matured, it divides into two daughter cells on the
@@ -96,8 +97,8 @@ nothing # hide
 # valid for small length scales, where viscous forces dominate over inertia.
 function agent_step!(agent::SimpleCell, model::ABM)
     fsym, compression, torque = transform_forces(agent)
-    new_pos = agent.pos .+ model.dt * model.mobility .* fsym
-    move_agent!(agent, new_pos, model)
+    direction =  model.dt * model.mobility .* fsym
+    walk!(agent, direction, model)
     agent.length += model.dt * model.mobility .* compression
     agent.orientation += model.dt * model.mobility .* torque
     agent.growthprog += model.dt * agent.growthrate
