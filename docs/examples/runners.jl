@@ -39,7 +39,7 @@ function initialize(map_url; goal = (128, 409), seed = 88)
         ## Place runners in the low-lying space in the map.
         runner = add_agent!((rand(model.rng, 100:350), rand(model.rng, 50:200)), model)
         ## Everyone wants to get to the same place.
-        set_target!(runner, goal, model.pathfinder)
+        plan_route!(runner, goal, model.pathfinder)
     end
     return model
 end
@@ -55,7 +55,7 @@ agent_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
 
 # ## Let's Race
 # %% #src
-# Plotting is simple enough. We just need to use the [`InteractiveDynamics.abm_plot`](@ref)
+# Plotting is simple enough. We just need to use the [`InteractiveDynamics.abmplot`](@ref)
 # for our runners, and display the heightmap for our reference. A better interface to do
 # this is currently a work in progress.
 using InteractiveDynamics
@@ -71,11 +71,11 @@ model = initialize(map_url)
 # and plot
 static_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
 
-abm_video(
+abmvideo(
     "runners.mp4",
     model,
     agent_step!;
-    resolution = (700, 700),
+    figurekwargs = (resolution = (700, 700),),
     frames = 410,
     framerate = 45,
     ac = :black,
