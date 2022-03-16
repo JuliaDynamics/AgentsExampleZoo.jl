@@ -1,7 +1,8 @@
 # %% Example files
+# Add new examples here (only compiles these examples)
 NEW_EXAMPLES = [
 ]
-### TEETETETE
+# Once approved, move examples here:
 EXISTING_EXAMPLES = [
     # The following are sorted ALPHABETICALLY!!!
     "Bacteria Growth" => "growing_bacteria.jl",
@@ -22,7 +23,7 @@ EXISTING_EXAMPLES = [
 ]
 
 
-# %% Documentation building code (not to be touched)
+# Documentation building code (not to be touched)
 # Load packages
 cd(@__DIR__)
 using Pkg;
@@ -42,7 +43,6 @@ ENV["GKS_ENCODING"] = "utf-8"
 println("Converting Examples...")
 
 
-# %%
 # download the themes
 println("Theme-ing")
 using DocumenterTools:Themes
