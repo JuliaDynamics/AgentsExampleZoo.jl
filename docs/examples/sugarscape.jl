@@ -194,7 +194,7 @@ using CairoMakie
 CairoMakie.activate!() # hide
 
 fig = Figure(resolution = (600, 600))
-ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=cgrad(:thermal))
+ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
 Colorbar(fig[1, 2], hm, width = 20)
 fig
 
@@ -268,45 +268,38 @@ end
 
 # ## Plotting & Animating
 
-# We can plot the ABM and the sugar distribution side by side using [`abm_plot`](@ref)
-# and standard Makie.jl commands like so
+# We can plot the ABM and the sugar distribution side by side using [`abmplot`](@ref)
+# and standard Makie.jl commands like lifting the model observable.
 using InteractiveDynamics
 
 model = sugarscape()
-fig, abmstepper = abm_plot(model; resolution = (800, 600))
-ax, hm = heatmap(fig[1,2], model.sugar_values; colormap=cgrad(:thermal), colorrange=(0,4))
-ax.aspect = AxisAspect(1) # equal aspect ratio for heatmap
+fig, ax, abmp = abmplot(model; figkwargs = (resolution = (800, 600)))
+## Lift model observable for heatmap
+sugar = @lift($(abmp.model).sugar_values)
+axhm, hm = heatmap(fig[1,2], sugar; colormap=:thermal, colorrange=(0,4))
+axhm.aspect = AxisAspect(1) # equal aspect ratio for heatmap
 Colorbar(fig[1, 3], hm, width = 15, tellheight=false)
-rowsize!(fig.layout, 1, ax.scene.px_area[].widths[2]) # Colorbar height = axis height
+rowsize!(fig.layout, 1, axhm.scene.px_area[].widths[2]) # Colorbar height = axis height
 fig
 
-
-# To animate them both however, we will use the approach Makie.jl suggests for animations,
-# which is based on `Observables`. We start similarly with a call to `abm_plot`,
-# but now make the plotted heatmap an obsrvable
-fig, abmstepper = abm_plot(model; resolution = (800, 600))
-obs_heat = Observable(model.sugar_values)
-ax, hm = heatmap(fig[1,2], obs_heat; colormap=cgrad(:thermal), colorrange=(0,4))
-ax.aspect = AxisAspect(1) # equal aspect ratio for heatmap
-Colorbar(fig[1, 3], hm, width = 15, tellheight=false)
-rowsize!(fig.layout, 1, ax.scene.px_area[].widths[2]) # Colorbar height = axis height
-
-# and also add a title for good measure
+# Animating this is now trivial. We simply step the model observable in `abmp`.
+# We'll also add a title that counts the step number
 s = Observable(0) # counter of current step, also observable
-t = lift(x -> "Sugarscape, step = $x", s)
-supertitle = Label(fig[0, :], t, textsize = 24, halign = :left)
+t = @lift("Sugarscape, step = $($(s))")
+connect!(ax.title, t)
+ax.titlealign = :left
 fig
+
+# And proceed to animate:
 
 # We animate the evolution of both the ABM and the sugar distribution using the following
 # simple loop involving the abm stepper
 record(fig, "sugarvis.mp4"; framerate = 3) do io
     for j in 0:50 # = total number of frames
         recordframe!(io) # save current state
-        ## This updates the abm plot:
-        Agents.step!(abmstepper, model, agent_step!, model_step!, 1)
-        ## This updates the heatmap:
-        obs_heat[] = model.sugar_values
-        ## This updates the title:
+        ## This updates the abm plot and lifted heatmap
+        Agents.step!(abmp.model, agent_step!, model_step!, 1)
+        ## This updates the title counter
         s[] = s[] + 1
     end
 end
@@ -326,16 +319,15 @@ adata[1:10,:]
 
 # And now we animate the evolution of the distribution of wealth
 figure = Figure(resolution = (600, 600))
-title_text = Observable("Wealth distribution of individuals\nStep 1")
-figure[1, 1] = Label(figure, title_text; textsize=30, tellwidth=false)
+figure[1, 1] = Label(figure, title_text; textsize=20, tellwidth=false)
 ax = figure[2, 1] = Axis(figure; xlabel="Wealth", ylabel="Number of agents")
 histdata = Observable(adata[adata.step .== 20, :wealth])
 hist!(ax, histdata; bar_position=:step)
+ylims!(ax, (0, 50))
 record(figure, "sugarhist.mp4", 0:20; framerate=3) do i
     histdata[] = adata[adata.step .== i, :wealth]
     title_text[] = "Wealth distribution of individuals, step = $i"
     xlims!(ax, (0, max(histdata[]...)))
-    ylims!(ax, (0, 50))
 end
 nothing # hide
 
