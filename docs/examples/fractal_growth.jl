@@ -155,7 +155,7 @@ end
 # # Running the model
 
 # We run the model using the `InteractiveDynamics` package with `GLMakie` backend so
-# the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abm_video` function to easily record a video of the simulation running.
+# the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
 Random.seed!(42) # hide
 model = initialize_model()
 
@@ -163,14 +163,14 @@ using InteractiveDynamics
 import CairoMakie
 CairoMakie.activate!() # hide
 
-## Particles that are stuck and part of the fractal are shown in red, for visual distinction
+# Particles that are stuck and part of the fractal are shown in red, for visual distinction
 particle_color(a::Particle) = a.is_stuck ? :red : :blue
-## The visual size of particles corresponds to their radius, and has been calculated
-## for the default value of `space_extents` of the `initialize_model` function. It will
-## not look accurate on other values.
+# The visual size of particles corresponds to their radius, and has been calculated
+# for the default value of `space_extents` of the `initialize_model` function. It will
+# not look accurate on other values.
 particle_size(a::Particle) = 7.5 * a.radius
 
-abm_video(
+abmvideo(
     "fractal.mp4",
     model,
     agent_step!,
@@ -181,6 +181,7 @@ abm_video(
     spf = 10,
     frames = 600,
     framerate = 25,
+    title = "Fractal Growth",
     scatterkwargs = (strokewidth = 0.5, strokecolor = :white),
 )
 nothing # hide
