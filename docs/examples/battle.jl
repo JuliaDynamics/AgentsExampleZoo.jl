@@ -329,24 +329,7 @@ end
 # two dimensions of the space. Thankfully, the infastructure of `abmplot` makes this
 # straightforward.
 
-# Let's first define how the fighters will be visualized
-actions = [:rect, :utriangle, :circle, :pentagon, :diamond, :vline, :hline, :star4]
-# and then create the elements that will make the legend of the plot
-label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
-group_action = [
-    MarkerElement(
-        marker = marker,
-        color = :black,
-        strokecolor = :transparent,
-        markersize = 15,
-    ) for marker in actions
-]
-group_level = [
-    PolyElement(color = color, strokecolor = :transparent) for color in cgrad(:tab10)[1:10]
-]
-nothing #hide
-
-# Then, we will make a code that is very similar to the source code of
+# We will make a code that is very similar to the source code of
 # `abmplot`. We will initialize an observable of a model instance, and
 # lift all plotted elements from this observable.
 modelobs = Observable(model)
@@ -361,7 +344,7 @@ markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
 
 # Next, we initialize an axis and plot them
 fig = Figure()
-ax = Axis(fig[1,1]; title = "Battle Royale", aspect = DataAspect())
+ax = Axis(fig[1,1]; title = "Battle Royale")
 scatter!(ax, pos; color = colors, marker = markers, markersize = 15)
 e = size(model.space.s)[1:2] .+ 2
 o = zero.(e) .- 2
@@ -370,6 +353,20 @@ ylims!(ax, o[2], e[2])
 fig
 
 # Seems great so far! Let's add the legend
+actions = [:rect, :utriangle, :circle, :pentagon, :diamond, :vline, :hline, :star4]
+label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
+group_action = [
+    MarkerElement(
+        marker = marker,
+        color = :black,
+        strokecolor = :transparent,
+        markersize = 15,
+    ) for marker in actions
+]
+group_level = [
+    PolyElement(color = color, strokecolor = :transparent) for color in cgrad(:tab10)[1:10]
+]
+
 Legend(
     fig[2, 1],
     [group_action, group_level],
@@ -389,7 +386,7 @@ fig
 # Alright, a simple call to the `record` function can make a video of the process:
 modelobs[] = battle()
 record(fig, "battle.mp4", 1:225; framerate = 10) do i
-    ax.title = "Battle Royal, step = $(i)"
+    ax.title = "Battle Royale, step = $(i)"
     Agents.step!(modelobs, agent_step!, 1)
 end
 nothing # hide

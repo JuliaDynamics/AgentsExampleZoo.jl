@@ -101,14 +101,14 @@ plotkwargs = (
         colormap = cgrad([:white, :green, :red, :darkred]; categorical = true),
     ),
 )
-fig, _ = abm_plot(forest; plotkwargs...)
+fig, _ = abmplot(forest; plotkwargs...)
 fig
 
 # or animate it
 Random.seed!(10)
-forest = forest_fire(density = 0.6)
-add_agent!(forest) # Add one dummy agent so that abm_video will allow us to plot.
-abm_video(
+forest = forest_fire(density = 0.7)
+add_agent!(forest) # Add one dummy agent so that abmvideo will allow us to plot.
+abmvideo(
     "forest.mp4",
     forest,
     dummystep,
