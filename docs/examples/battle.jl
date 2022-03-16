@@ -10,22 +10,24 @@
 # the distance from neighbors not just spatially, but also categorically. We'll also use
 # the [`walk!`](@ref) function extensively.
 
-# The `Models` module includes this example as [`Models.battle`](@ref).
-
 # ## Rules of Engagement
 # Agents wander around the map looking for opponents. When a grid space is occupied by
-# two or more agents there will be a battle. With experience gained from the fight, the
+# two or more agents there will be blood. With experience gained from the fight, the
 # victor searches for more opponents to crush and losers scurry away defeated or possibly
 # even die. This process repeats until there is a single, definitive winner.
 #
 # For this battle ground to exist, the following rules must be followed:
 # - Agents have an experience level, starting at level 1 up to a maximum of 10.
-# - Agents will search for the nearest worthy opponent (one with equal or ±1 experience level) and move towards them to attack, so long as something more important doesn't happen, which could be
+# - Agents will search for the nearest worthy opponent (one with equal or ±1 experience
+#   level) and move towards them to attack, so long as something more important doesn't
+#   happen, which could be
 #   - A tougher opponent (with experience level +2 or higher) is nearby: run!
-#   - There are no worthy opponents available, but there are weak ones (with experience level -2 or lower): chase them down.
+#   - There are no worthy opponents available, but there are weak ones (with experience
+#     level -2 or lower): chase them down.
 #   - Capture and taunt a weaker opponent, then kill them.
 #   - Notice a tough opponent is occupied, sneak up and kill them.
-#   - There is no-one worthy to fight, but also no-one left to taunt. All bets are off: THERE CAN BE ONLY ONE.
+#   - There is no-one worthy to fight, but also no-one left to taunt. All bets are off:
+#     THERE CAN BE ONLY ONE.
 
 # Battles are won by weighted chance - a higher level gives an agent a larger chance of
 # winning, but does not guarantee it. When a victor is chosen
@@ -53,14 +55,14 @@ mutable struct Fighter <: AbstractAgent
     pos::Dims{3}
     has_prisoner::Bool
     capture_time::Int
-    shape::Symbol # For plotting
+    shape::Symbol # shape of the fighter conveys what action they are currently doing
 end
 
 # As you can see, the properties of out agent are very simple and contain only two
 # parameters that are needed to store context from one time step to the next. All
 # other properties needed are stored in the space. `pos` is three-dimensional, two
 # for the actual space agents move within, and a third categorical dimension representing
-# their level. `shape` is used solely for plotting (well, used once just for convenience).
+# their level.
 
 # Now let's set up the battle field:
 function battle(; fighters = 50)
@@ -94,7 +96,7 @@ model = battle()
 # To implement the rules of engagement, only an `agent_step!` function is required,
 # along with a few helper functions.
 
-space(agent) = agent.pos[1:2]
+loc(agent) = agent.pos[1:2]
 level(agent) = agent.pos[3]
 
 # `space` allows us to invoke a number of helpful utilities provided by Agents.jl
@@ -108,7 +110,7 @@ function closest_target(agent::Fighter, ids::Vector{Int}, model::ABM)
     if length(ids) == 1
         closest = ids[1]
     else
-        close_id = argmin(map(id -> edistance(space(agent), space(model[id]), model), ids))
+        close_id = argmin(map(id -> edistance(loc(agent), loc(model[id]), model), ids))
         closest = ids[close_id]
     end
     return model[closest]
@@ -134,13 +136,13 @@ function battle!(one::Fighter, two::Fighter, model)
 
     new_lvl_up = min(level(up) + 1, 10)
     new_pos_up =
-        clamp.(rand(model.rng, -1:1, 2) .+ space(up), [1, 1], size(model.space)[1:2])
+        clamp.(rand(model.rng, -1:1, 2) .+ loc(up), [1, 1], size(model.space)[1:2])
     move_agent!(up, (new_pos_up..., new_lvl_up), model)
     new_lvl_down = level(down) - 1
     if new_lvl_down == 0
         kill_agent!(down, model)
     else
-        move_agent!(down, (space(down)..., new_lvl_down), model)
+        move_agent!(down, (loc(down)..., new_lvl_down), model)
     end
 end
 
@@ -163,7 +165,7 @@ function captor_behavior!(agent, model)
             new_lvl = min(level(agent) + gain, 10)
             kill_agent!(prisoner, model)
             agent.has_prisoner = false
-            move_agent!(agent, (space(agent)..., new_lvl), model)
+            move_agent!(agent, (loc(agent)..., new_lvl), model)
         end
     else
         ## Someone is here to kill the captor. Could be more than one opponent
@@ -181,7 +183,7 @@ function captor_behavior!(agent, model)
         gain = ceil(Int, level(agent) / 2)
         new_lvl = min(level(agent) + rand(model.rng, 1:gain), 10)
         kill_agent!(agent, model)
-        move_agent!(exploiter, (space(exploiter)..., new_lvl), model)
+        move_agent!(exploiter, (loc(exploiter)..., new_lvl), model)
         ## Prisoner runs away in the commotion
         prisoner.shape = :utriangle
         prisoner.capture_time = 0
@@ -193,7 +195,7 @@ end
 # paramount since there is no gain, and fights are to the death.
 
 function endgame!(agent, model)
-    origin = space(agent)
+    origin = loc(agent)
     end_ids = collect(Iterators.filter(
         id -> model[id].shape == :circle && id != agent.id,
         allids(model),
@@ -201,7 +203,7 @@ function endgame!(agent, model)
     agent.shape = :circle
     if !isempty(end_ids)
         opponent = closest_target(agent, end_ids, model)
-        target = space(opponent)
+        target = loc(opponent)
         if origin == target
             ## Battle
             agent.shape = :rect
@@ -253,7 +255,7 @@ function agent_step!(agent, model)
     elseif agent.has_prisoner
         captor_behavior!(agent, model)
     else
-        origin = space(agent)
+        origin = loc(agent)
         ## Find agents that have captives, they are not focused
         occupied_ids = collect(Iterators.filter(
             id -> model[id].has_prisoner,
@@ -261,7 +263,7 @@ function agent_step!(agent, model)
         ))
         if !isempty(occupied_ids)
             ## Sneak up behind them
-            target = space(closest_target(agent, occupied_ids, model))
+            target = loc(closest_target(agent, occupied_ids, model))
             agent.shape = :pentagon
             walk!(agent, (sign.(target .- origin)..., 0), model)
         else
@@ -269,7 +271,7 @@ function agent_step!(agent, model)
             strong_ids = collect(nearby_ids(agent, model, [(1, -5:5), (2, -5:5), (3, 2:4)]))
             if !isempty(strong_ids)
                 ## Run away from nearest
-                target = space(closest_target(agent, strong_ids, model))
+                target = loc(closest_target(agent, strong_ids, model))
                 agent.shape = :utriangle
                 walk!(agent, (sign.(origin .- target)..., 0), model)
             else
@@ -277,7 +279,7 @@ function agent_step!(agent, model)
                 worthy_ids = collect(nearby_ids(agent, model, [(3, -1:1)]))
                 if !isempty(worthy_ids)
                     opponent = closest_target(agent, worthy_ids, model)
-                    target = space(opponent)
+                    target = loc(opponent)
                     if origin == target
                         ## Battle
                         agent.shape = :rect
@@ -297,7 +299,7 @@ function agent_step!(agent, model)
                     ))
                     if !isempty(weak_ids)
                         prisoner = closest_target(agent, weak_ids, model)
-                        target = space(prisoner)
+                        target = loc(prisoner)
                         if origin == target
                             ## Capture and taunt target
                             agent.has_prisoner = true
@@ -322,12 +324,15 @@ function agent_step!(agent, model)
 end
 
 # ## Let the Battle Begin
-# Plotting is relatively straightforward. [`plotabm`](@ref) cannot be used explicitly (yet)
-# since it expects our categorical dimension is actually a third spatial one.
-# We start with some custom legends to easier understand the dynamics.
+# We need to write entirely custom plotting here, because we have a 3D space
+# (that would be plotted as 3D), but we actually only want to plot the first
+# two dimensions of the space. Thankfully, the infastructure of `abmplot` makes this
+# straightforward.
 
-label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
+# Let's first define how the fighters will be visualized
 actions = [:rect, :utriangle, :circle, :pentagon, :diamond, :vline, :hline, :star4]
+# and then create the elements that will make the legend of the plot
+label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
 group_action = [
     MarkerElement(
         marker = marker,
@@ -341,39 +346,32 @@ group_level = [
 ]
 nothing #hide
 
-# And some complex internals that will be hidden away in the near future
+# Then, we will make a code that is very similar to the source code of
+# `abmplot`. We will initialize an observable of a model instance, and
+# lift all plotted elements from this observable.
+modelobs = Observable(model)
 
+# First, we make the positions, colors and markers observables for the agents
+by_id = Schedulers.by_id
+pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs)
+ac(agent) = to_color(cgrad(:tab10)[level(agent)])
+colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs)
+am(a) = a.shape
+markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
+
+# Next, we initialize an axis and plot them
+fig = Figure()
+ax = Axis(fig[1,1]; title = "Battle Royale", aspect = DataAspect())
+scatter!(ax, pos; color = colors, marker = markers, markersize = 15)
 e = size(model.space.s)[1:2] .+ 2
 o = zero.(e) .- 2
-clr(agent) = cgrad(:tab10)[level(agent)]
-mkr(a) = a.shape
-colors = Observable(to_color.([clr(model[id]) for id in Schedulers.by_id(model)]))
-markers = Observable([mkr(model[id]) for id in Schedulers.by_id(model)])
-pos = Observable([model[id].pos for id in Schedulers.by_id(model)])
-stepper = InteractiveDynamics.ABMStepper(
-    clr,
-    mkr,
-    15,
-    nothing,
-    Schedulers.by_id,
-    pos,
-    colors,
-    Observable(15),
-    markers,
-    nothing,
-    nothing
-)
-nothing #hide
+xlims!(ax, o[1], e[1])
+ylims!(ax, o[2], e[2])
+fig
 
-# Finally, the plot:
-
-f = Figure(resolution = (600, 700))
-ax = f[1, 1] = Axis(f, title = "Battle Royale")
-hidedecorations!(ax)
-ax.xgridvisible = true
-ax.ygridvisible = true
-f[2, 1] = Legend(
-    f,
+# Seems great so far! Let's add the legend
+Legend(
+    fig[2, 1],
     [group_action, group_level],
     [label_action, string.(1:10)],
     ["Action", "Level"],
@@ -382,14 +380,20 @@ f[2, 1] = Legend(
     tellwidth = false,
     nbanks = 5,
 )
+fig
 
-scatter!(ax, pos; color = colors, markersize = 15, marker = markers, strokewidth = 0.0)
-xlims!(ax, o[1], e[1])
-ylims!(ax, o[2], e[2])
-record(f, "battle.mp4", 0:225; framerate = 10) do i
-    Agents.step!(stepper, model, agent_step!, dummystep, 1)
+# Now we can step the model and this will reflect the dynamics correctly:
+step!(modelobs, agent_step!, 5)
+fig
+
+# Alright, a simple call to the `record` function can make a video of the process:
+modelobs[] = battle()
+record(fig, "battle.mp4", 1:225; framerate = 10) do i
+    ax.title = "Battle Royal, step = $(i)"
+    Agents.step!(modelobs, agent_step!, 1)
 end
 nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../battle.mp4" type="video/mp4">
