@@ -207,16 +207,19 @@ using InteractiveDynamics
 using CairoMakie
 CairoMakie.activate!() # hide
 
-# To view our starting population, we can build an overview plot using [`abm_plot`](@ref).
+# To view our starting population, we can build an overview plot using [`abmplot`](@ref).
 # We define the plotting details for the wolves and sheep:
 offset(a) = a.type == :sheep ? (-0.7, -0.5) : (-0.3, -0.5)
 ashape(a) = a.type == :sheep ? :circle : :utriangle
-acolor(a) = a.type == :sheep ? RGBAf0(1.0, 1.0, 1.0, 0.8) : RGBAf0(0.2, 0.2, 0.2, 0.8)
+acolor(a) = a.type == :sheep ? RGBAf(1.0, 1.0, 1.0, 0.8) : RGBAf(0.2, 0.2, 0.2, 0.8)
 
-# and instruct [`abm_plot`](@ref) how to plot grass as a heatmap:
+# and instruct [`abmplot`](@ref) how to plot grass as a heatmap:
 grasscolor(model) = model.countdown ./ model.regrowth_time
 # and finally define a colormap for the grass:
 heatkwargs = (colormap = [:brown, :green], colorrange = (0, 1))
+
+fig = Figure()
+ax = Axis(fig[1,1])
 
 plotkwargs = (
     ac = acolor,
@@ -225,9 +228,10 @@ plotkwargs = (
     offset = offset,
     heatarray = grasscolor,
     heatkwargs = heatkwargs,
+    ax = ax,
 )
 
-fig, _ = abm_plot(model; plotkwargs...)
+abmplot!(ax, model; plotkwargs...)
 fig
 
 # Now, lets run the simulation and collect some data. Define datacollection:
@@ -282,7 +286,7 @@ model = initialize_model(
     wolf_reproduce = 0.08,
     seed = 7758,
 )
-abm_video(
+abmvideo(
     "sheepwolf.mp4",
     model,
     sheepwolf_step!,

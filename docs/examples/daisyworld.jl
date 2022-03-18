@@ -234,7 +234,7 @@ CairoMakie.activate!() # hide
 
 model = daisyworld()
 
-# To visualize we need to define the necessary functions for [`abm_plot`](@ref).
+# To visualize we need to define the necessary functions for [`abmplot`](@ref).
 # We will also utilize its ability to plot an underlying heatmap,
 # which will be the model surface temperature,
 # while daisies will be plotted in black and white as per their breed.
@@ -249,17 +249,17 @@ plotkwargs = (
     heatarray = :temperature,
     heatkwargs = (colorrange = (-20, 60),),
 )
-fig, _ = abm_plot(model; plotkwargs...)
+fig, _ = abmplot(model; plotkwargs...)
 fig
 
 # And after a couple of steps
 Agents.step!(model, agent_step!, model_step!, 5)
-fig, _ = abm_plot(model; heatarray = model.temperature, plotkwargs...)
+fig, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
 fig
 
 # Let's do some animation now
 model = daisyworld()
-abm_video(
+abmvideo(
     "daisyworld.mp4",
     model,
     agent_step!,
