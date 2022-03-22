@@ -326,13 +326,10 @@ end
 # ## Let the Battle Begin
 # We need to write entirely custom plotting here, because we have a 3D space
 # (that would be plotted as 3D), but we actually only want to plot the first
-# two dimensions of the space. Thankfully, the infastructure of `abmplot` makes this
+# two dimensions of the space. Thankfully, the infastructure of `ABMObservable` makes this
 # straightforward.
-
-# We will make a code that is very similar to the source code of
-# `abmplot`. We will initialize an observable of a model instance, and
-# lift all plotted elements from this observable.
-modelobs = Observable(model)
+abmobs = ABMObservable(model; agent_step!)
+modelobs = abmobs.model
 
 # First, we make the positions, colors and markers observables for the agents
 by_id = Schedulers.by_id
@@ -380,7 +377,7 @@ Legend(
 fig
 
 # Now we can step the model and this will reflect the dynamics correctly:
-step!(modelobs, agent_step!, 5)
+step!(abmobs, 5)
 fig
 
 # Alright, a simple call to the `record` function can make a video of the process:

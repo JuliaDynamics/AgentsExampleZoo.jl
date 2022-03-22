@@ -65,7 +65,6 @@ nothing # hide
 # ## Stepping functions
 
 function model_step!(model)
-    extent = model.space.extent
     for a in allagents(model)
         if a.growthprog ≥ 1
             ## When a cell has matured, it divides into two daughter cells on the

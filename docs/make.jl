@@ -26,9 +26,10 @@ EXISTING_EXAMPLES = [
 # Documentation building code (not to be touched)
 # Load packages
 cd(@__DIR__)
-using Pkg;
-Pkg.activate(@__DIR__);
-const CI = get(ENV, "CI", nothing) == "true"
+using Pkg
+Pkg.activate(@__DIR__)
+CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
+CI && Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
