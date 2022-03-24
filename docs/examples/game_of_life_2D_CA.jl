@@ -23,7 +23,6 @@ using Agents, Random
 # survive if the number of their living neighbors is ≤S,
 # come to life if their living neighbors are  ≥R and ≤O.
 rules = (2, 3, 3, 3) # (D, S, R, O)
-nothing # hide
 
 # ## 2. Build the model
 
@@ -42,7 +41,7 @@ end
 # it actually decides whether cells connect to their diagonal neighbors.
 
 # This function creates a model where all cells are dead.
-function build_model(; rules::Tuple, dims = (100, 100), metric = :chebyshev, seed = 120)
+function build_model(rules::Tuple; dims = (100, 100), metric = :chebyshev, seed = 120)
     space = GridSpace(dims; metric)
     properties = Dict(:rules => rules)
     model = ABM(Cell, space; properties, rng = MersenneTwister(seed))
@@ -88,7 +87,7 @@ end
 nothing # hide
 
 # now we can instantiate the model:
-model = build_model(rules = rules, dims = (50, 50))
+model = build_model(rules; dims = (50, 50))
 
 # Let's make some random cells on
 for i in 1:nagents(model)
@@ -99,7 +98,7 @@ end
 
 # ## 3. Animate the model
 
-# We use the [`InteractiveDynamics.abm_video`](@ref) for creating an animation and saving it to an mp4
+# We use the [`InteractiveDynamics.abmvideo`](@ref) for creating an animation and saving it to an mp4
 
 using InteractiveDynamics
 import CairoMakie
@@ -107,7 +106,7 @@ CairoMakie.activate!() # hide
 
 ac(x) = x.status == true ? :black : :white
 am(x) = x.status == true ? '■' : '□'
-abm_video(
+abmvideo(
     "game of life.mp4",
     model,
     dummystep,

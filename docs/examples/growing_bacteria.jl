@@ -65,7 +65,6 @@ nothing # hide
 # ## Stepping functions
 
 function model_step!(model)
-    extent = model.space.extent
     for a in allagents(model)
         if a.growthprog ≥ 1
             ## When a cell has matured, it divides into two daughter cells on the
@@ -189,17 +188,17 @@ function cassini_oval(agent)
     R = [cos(θ) -sin(θ); sin(θ) cos(θ)]
 
     bacteria = R * permutedims([x y])
-    coords = [Point2f0(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
+    coords = [Point2f(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
     scale(Polygon(coords), 0.5)
 end
 nothing # hide
 
 # set up some nice colors
-bacteria_color(b) = CairoMakie.RGBf0(b.id * 3.14 % 1, 0.2, 0.2)
+bacteria_color(b) = RGBf(b.id * 3.14 % 1, 0.2, 0.2)
 nothing # hide
 
 # and proceed with the animation
-abm_video(
+abmvideo(
     "bacteria.mp4", model, agent_step!, model_step!;
     am = cassini_oval, ac = bacteria_color,
     spf = 50, framerate = 30, frames = 200,

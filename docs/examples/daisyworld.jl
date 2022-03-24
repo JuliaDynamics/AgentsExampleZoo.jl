@@ -42,13 +42,8 @@
 # `Land` represents the surface. We could make `Land` also have an albedo field, but
 # in this world, the entire surface has the same albedo and thus we make it a model parameter.
 
-# Notice that the `Land` does not necessarily have to be an agent, and one could represent
-# surface temperature via a matrix (parameter of the model). This is done in an older version,
-# see file `examples/daisyworld_matrix.jl`. The old version has a slight performance advantage.
-# However, the advantage of making the surface composed of
-# agents is that visualization is simple and one can use the interactive application to also
-# visualize surface temperature.
-# It is also available from the `Models` module as [`Models.daisyworld`](@ref).
+# Notice that the surface is not an agent, as per design of Agents.jl, but rather a
+# standard Julia array.
 
 using Agents
 using Statistics: mean
@@ -234,7 +229,7 @@ CairoMakie.activate!() # hide
 
 model = daisyworld()
 
-# To visualize we need to define the necessary functions for [`abm_plot`](@ref).
+# To visualize we need to define the necessary functions for [`abmplot`](@ref).
 # We will also utilize its ability to plot an underlying heatmap,
 # which will be the model surface temperature,
 # while daisies will be plotted in black and white as per their breed.
@@ -249,17 +244,17 @@ plotkwargs = (
     heatarray = :temperature,
     heatkwargs = (colorrange = (-20, 60),),
 )
-fig, _ = abm_plot(model; plotkwargs...)
+fig, _ = abmplot(model; plotkwargs...)
 fig
 
 # And after a couple of steps
 Agents.step!(model, agent_step!, model_step!, 5)
-fig, _ = abm_plot(model; heatarray = model.temperature, plotkwargs...)
+fig, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
 fig
 
 # Let's do some animation now
 model = daisyworld()
-abm_video(
+abmvideo(
     "daisyworld.mp4",
     model,
     agent_step!,
@@ -321,42 +316,3 @@ lines!(ax2, model_df[!, :step], model_df[!, :temperature], color = :red)
 lines!(ax3, model_df[!, :step], model_df[!, :solar_luminosity], color = :red)
 for ax in (ax1, ax2); ax.xticklabelsvisible = false; end
 figure
-
-# ## Interactive scientific research
-# Julia is an interactive language, and thus everything that you do with Agents.jl can be
-# considered interactive. However, we can do even better by using our interactive application.
-# In this example, rather than describing what solar forcing we want to investigate before
-# hand, we use the interactive application, to control by ourselves, in real time, how
-# much solar forcing is delivered to daisyworld.
-
-# So, let's make an [`InteractiveDynamics.abm_data_exploration`](@ref).
-
-# ```julia
-# using InteractiveDynamics, GLMakie, Random
-# ```
-model = daisyworld(; solar_luminosity = 1.0, solar_change = 0.0, scenario = :change)
-
-# The only significant addition to use the interactive application is that we make a parameter
-# container for surface albedo and for the rate of change of solar luminosity,
-# and add some labels for clarity.
-params = Dict(
-    :surface_albedo => 0:0.01:1,
-    :solar_change => -0.1:0.01:0.1,
-)
-alabels = ["black", "white"]
-mlabels = ["T", "L"]
-
-# And we run it
-
-# ```julia
-# fig, adf, mdf = abm_data_exploration(
-#     model, agent_step!, model_step!, params;
-#     mdata, adata, alabels, mlabels, plotkwargs...
-# )
-# ```
-
-# ```@raw html
-# <video width="100%" height="auto" controls autoplay loop>
-# <source src="https://raw.githubusercontent.com/JuliaDynamics/JuliaDynamics/master/videos/interact/agents.mp4?raw=true" type="video/mp4">
-# </video>
-# ```

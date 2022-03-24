@@ -3,6 +3,16 @@
 !!! note "This is an examples-only repository!"
     Please notice that this repository holds _only examples_ of various models implemented in Agents.jl. To actually learn how to use Agents.jl please visit the [online documentation](https://juliadynamics.github.io/Agents.jl/stable/) first!
 
+
+The examples here were built with versions
+
+```@example MAIN
+using Pkg
+Pkg.status(["Agents", "InteractiveDynamics"];
+    mode = PKGMODE_MANIFEST, io=stdout
+)
+```
+
 # Overview of Examples
 
 Our ever growing list of examples are designed to showcase what is possible with
@@ -19,7 +29,7 @@ of what is possible on a grid. If you're looking for something simpler, then the
 
 ## Continuous spaces
 In this space, agents generally move with a given velocity
-and interact in a far smoother manner than grid based models. 
+and interact in a far smoother manner than grid based models.
 The [Flocking model](https://juliadynamics.github.io/Agents.jl/stable/examples/flock/)
 is perhaps the most famous example of bottom-up emergent phenomena and is hosted in the main Agents.jl documentation. Something quite
 topical at present is our

@@ -34,7 +34,7 @@ function initalize_model(map_url)
     walker = Walker(1, (1, 4))
     add_agent_pos!(walker, model)
     ## The walker's movement target is the end of the maze.
-    set_target!(walker, (41, 32), pathfinder)
+    plan_route!(walker, (41, 32), pathfinder)
 
     return model, pathfinder
 end
@@ -51,17 +51,17 @@ model, pathfinder = initalize_model(map_url)
 agent_step!(agent, model) = move_along_route!(agent, model, pathfinder)
 
 # ## Visualization
-# Visualizing the `Walker` move through the maze is handled through [`InteractiveDynamics.abm_plot`](@ref).
+# Visualizing the `Walker` move through the maze is handled through [`InteractiveDynamics.abmplot`](@ref).
 using InteractiveDynamics
 using CairoMakie
 CairoMakie.activate!() # hide
 
 # The `heatarray` keyword argument allows plotting the maze as a heatmap behind the agent.
-abm_video(
+abmvideo(
     "maze.mp4",
     model,
     agent_step!;
-    resolution=(700,700),
+    figurekwargs = (resolution=(700,700),),
     frames=310,
     framerate=30,
     ac=:red,

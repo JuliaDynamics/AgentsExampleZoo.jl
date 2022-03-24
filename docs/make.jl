@@ -1,7 +1,8 @@
 # %% Example files
+# Add new examples here (only compiles these examples)
 NEW_EXAMPLES = [
 ]
-### TEETETETE
+# Once approved, move examples here:
 EXISTING_EXAMPLES = [
     # The following are sorted ALPHABETICALLY!!!
     "Bacteria Growth" => "growing_bacteria.jl",
@@ -22,12 +23,13 @@ EXISTING_EXAMPLES = [
 ]
 
 
-# %% Documentation building code (not to be touched)
+# Documentation building code (not to be touched)
 # Load packages
 cd(@__DIR__)
-using Pkg;
-Pkg.activate(@__DIR__);
-const CI = get(ENV, "CI", nothing) == "true"
+using Pkg
+Pkg.activate(@__DIR__)
+CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
+CI && Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
@@ -42,7 +44,6 @@ ENV["GKS_ENCODING"] = "utf-8"
 println("Converting Examples...")
 
 
-# %%
 # download the themes
 println("Theme-ing")
 using DocumenterTools:Themes

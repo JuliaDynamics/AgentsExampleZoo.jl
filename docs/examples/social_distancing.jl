@@ -28,7 +28,7 @@
 
 using Agents, Random
 
-mutable struct Agent <: AbstractAgent
+mutable struct SocialAgent <: AbstractAgent
     id::Int
     pos::NTuple{2,Float64}
     vel::NTuple{2,Float64}
@@ -41,7 +41,7 @@ end
 # Let's also initialize a trivial model with continuous space
 function ball_model(; speed = 0.002)
     space2d = ContinuousSpace((1, 1), 0.02)
-    model = ABM(Agent, space2d, properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
+    model = ABM(SocialAgent, space2d, properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
 
     ## And add some agents to the model
     for ind in 1:500
@@ -63,29 +63,7 @@ agent_step!(agent, model) = move_agent!(agent, model, model.dt)
 nothing # hide
 
 # `dt` is our time resolution, but we will talk about this more later!
-# Cool, let's see now how this model evolves.
-using InteractiveDynamics
-using CairoMakie
-CairoMakie.activate!() # hide
 
-abm_video(
-    "socialdist1.mp4",
-    model,
-    agent_step!;
-    title = "Ball Model",
-    frames = 50,
-    spf = 2,
-    framerate = 25,
-)
-nothing # hide
-# ```@raw html
-# <video width="auto" controls autoplay loop>
-# <source src="../socialdist1.mp4" type="video/mp4">
-# </video>
-# ```
-
-# As you can see the agents move in a straight line in periodic space.
-# There is no interaction yet. Let's change that.
 
 # ## Billiard-like interaction
 # We will model the agents as balls that collide with each other.
@@ -94,8 +72,8 @@ nothing # hide
 # 1. [`elastic_collision!`](@ref)
 
 # We want all agents to interact in one go, and we want to avoid double interactions
-# (as instructed by [`interacting_pairs`](@ref)), so we define a model step and re-run the
-# animation.
+# (as instructed by [`interacting_pairs`](@ref)), so we define a model step.
+
 function model_step!(model)
     for (a1, a2) in interacting_pairs(model, 0.012, :nearest)
         elastic_collision!(a1, a2, :mass)
@@ -104,7 +82,13 @@ end
 
 model2 = ball_model()
 
-abm_video(
+# And then make an animation
+
+using InteractiveDynamics
+using CairoMakie
+CairoMakie.activate!() # hide
+
+abmvideo(
     "socialdist2.mp4",
     model2,
     agent_step!,
@@ -150,7 +134,7 @@ for id in 1:400
 end
 
 # let's animate this again
-abm_video(
+abmvideo(
     "socialdist3.mp4",
     model3,
     agent_step!,
@@ -245,13 +229,13 @@ nothing # hide
 
 # To visualize this model, we will use black color for the susceptible, red for
 # the infected infected and green for the recovered, leveraging
-# [`InteractiveDynamics.abm_plot`](@ref).
+# [`InteractiveDynamics.abmplot`](@ref).
 
 sir_model = sir_initiation()
 
 sir_colors(a) = a.status == :S ? "#2b2b33" : a.status == :I ? "#bf2642" : "#338c54"
 
-fig, abmstepper = abm_plot(sir_model; ac = sir_colors)
+fig, ax, abmp = abmplot(sir_model; ac = sir_colors)
 fig # display figure
 
 # We have increased the size of the model 10-fold (for more realistic further analysis)
@@ -312,7 +296,7 @@ nothing # hide
 
 sir_model = sir_initiation()
 
-abm_video(
+abmvideo(
     "socialdist4.mp4",
     sir_model,
     sir_agent_step!,
@@ -363,7 +347,7 @@ ax = figure[1, 1] = Axis(figure; ylabel = "Infected")
 l1 = lines!(ax, data1[:, dataname((:status, infected))], color = :orange)
 l2 = lines!(ax, data2[:, dataname((:status, infected))], color = :blue)
 l3 = lines!(ax, data3[:, dataname((:status, infected))], color = :green)
-figure[1, 2] =
+figure[1, 2][1,1] =
     Legend(figure, [l1, l2, l3], ["r=$r1, beta=$β1", "r=$r2, beta=$β1", "r=$r1, beta=$β2"])
 figure
 
@@ -380,7 +364,7 @@ figure
 # (which feels like it approximates reality better).
 
 sir_model = sir_initiation(isolated = 0.8)
-abm_video(
+abmvideo(
     "socialdist5.mp4",
     sir_model,
     sir_agent_step!,
@@ -411,10 +395,10 @@ sir_model4 = sir_initiation(reinfection_probability = r4, βmin = β1, isolated 
 data4, _ = run!(sir_model4, sir_agent_step!, sir_model_step!, 2000; adata)
 
 l4 = lines!(ax, data4[:, dataname((:status, infected))], color = :red)
-figure[1, 2] = Legend(
+figure[1, 2][2,1] = Legend(
     figure,
-    [l1, l2, l3, l4],
-    ["r=$r1, beta=$β1", "r=$r2, beta=$β1", "r=$r1, beta=$β2", "r=$r4, social distancing"],
+    [l4],
+    ["r=$r4, social distancing"],
 )
 figure
 
