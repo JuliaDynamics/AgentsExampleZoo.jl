@@ -2,13 +2,11 @@
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>
-# <source src="../game of life.mp4" type="video/mp4">
+# <source src="../game_of_life.mp4" type="video/mp4">
 # </video>
 # ```
 
 # [Game of life on wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
-
-# It is also available from the `Models` module as [`Models.game_of_life`](@ref).
 
 using Agents, Random
 
@@ -25,102 +23,109 @@ using Agents, Random
 rules = (2, 3, 3, 3) # (D, S, R, O)
 
 # ## 2. Build the model
+# Like in the [Forest fire](@ref) example, we have a cellular automaton in our
+# hands. This is a model that does not require any agents. Just a matrix
+# whose "color" or "status" is the only thing necessary for the simulation.
 
-# First, define an agent type. It needs to have the compulsary `id` and `pos` fields,
-# as well as a `status` field that is `true` for cells that are alive and `false` otherwise.
-
-mutable struct Cell <: AbstractAgent
-    id::Int
-    pos::Dims{2}
-    status::Bool
-end
+# We still need to define a dummy agent type though for `ABM`:
+@agent Automaton GridAgent{2} begin end
 
 # The following function builds a 2D cellular automaton given some `rules`.
 # `dims` is a tuple of integers determining the width and height of the grid environment.
 # `metric` specifies how to measure distances in the space, and in our example
-# it actually decides whether cells connect to their diagonal neighbors.
+# it actually decides whether cells connect to their diagonal neighbors or not.
+# `:chebyshev` includes diagonal, `:manhattan` does not.
 
 # This function creates a model where all cells are dead.
-function build_model(rules::Tuple; dims = (100, 100), metric = :chebyshev, seed = 120)
-    space = GridSpace(dims; metric)
+function build_model(rules::Tuple;
+        alive_probability = 0.2,
+        dims = (100, 100), metric = :chebyshev, seed = 42
+    )
+    space = GridSpaceSingle(dims; metric)
     properties = Dict(:rules => rules)
-    model = ABM(Cell, space; properties, rng = MersenneTwister(seed))
-    idx = 1
-    for x in 1:dims[1]
-        for y in 1:dims[2]
-            add_agent_pos!(Cell(idx, (x, y), false), model)
-            idx += 1
+    status = zeros(Bool, dims)
+    ## We use a second copy so that we can do a "synchronous" update of the status
+    new_status = zeros(Bool, dims)
+    ## We use a `NamedTuple` for the parameter container to avoid type instabilities
+    properties = (; rules, status, new_status)
+    model = ABM(Automaton, space; properties, rng = MersenneTwister(seed))
+    ## Turn some of the cells on
+    for pos in positions(model)
+        if rand(model.rng) < alive_probability
+            status[pos...] = true
         end
     end
     return model
 end
-nothing # hide
+
+model = build_model(rules)
 
 # Now we define a stepping function for the model to apply the rules to agents.
 # We will also perform a synchronous agent update (meaning that the value of all
 # agents changes after we have decided the new value for each agent individually).
-function ca_step!(model)
-    new_status = fill(false, nagents(model))
-    for agent in allagents(model)
-        n = alive_neighbors(agent, model)
-        if agent.status == true && (n ≤ model.rules[4] && n ≥ model.rules[1])
-            new_status[agent.id] = true
-        elseif agent.status == false && (n ≥ model.rules[3] && n ≤ model.rules[4])
-            new_status[agent.id] = true
+function game_of_life_step!(model)
+    ## First, get the new statuses
+    new_status = model.new_status
+    status = model.status
+    @inbounds for pos in positions(model)
+        ## Convenience function that counts how many nearby cells are "alive"
+        n = alive_neighbors(pos, model)
+        if status[pos...] == true && (n ≤ model.rules[4] && n ≥ model.rules[1])
+            new_status[pos...] = true
+        elseif status[pos...] == false && (n ≥ model.rules[3] && n ≤ model.rules[4])
+            new_status[pos...] = true
+        else
+            new_status[pos...] = false
         end
     end
-
-    for id in allids(model)
-        model[id].status = new_status[id]
-    end
+    ## Then, update the new statuses into the old
+    status .= new_status
+    return
 end
 
-function alive_neighbors(agent, model) # count alive neighboring cells
+function alive_neighbors(pos, model) # count alive neighboring cells
     c = 0
-    for n in nearby_agents(agent, model)
-        if n.status == true
+    @inbounds for near_pos in nearby_positions(pos, model)
+        if model.status[near_pos...] == true
             c += 1
         end
     end
     return c
 end
-nothing # hide
 
 # now we can instantiate the model:
-model = build_model(rules; dims = (50, 50))
+model = build_model(rules)
 
-# Let's make some random cells on
-for i in 1:nagents(model)
-    if rand(model.rng) < 0.2
-        model.agents[i].status = true
-    end
-end
 
 # ## 3. Animate the model
 
 # We use the [`InteractiveDynamics.abmvideo`](@ref) for creating an animation and saving it to an mp4
-
 using InteractiveDynamics
 import CairoMakie
 CairoMakie.activate!() # hide
 
-ac(x) = x.status == true ? :black : :white
-am(x) = x.status == true ? '■' : '□'
+plotkwargs = (
+    add_colorbar = false,
+    heatarray = :status,
+    heatkwargs = (
+        colorrange = (0, 1),
+        colormap = cgrad([:white, :black]; categorical = true),
+    ),
+)
+
 abmvideo(
-    "game of life.mp4",
+    "game_of_life.mp4",
     model,
     dummystep,
-    ca_step!;
+    game_of_life_step!;
     title = "Game of Life",
-    ac = :black,
-    as = 12,
-    am,
-    framerate = 5,
-    scatterkwargs = (strokewidth = 0,),
+    framerate = 10,
+    frames = 200,
+    plotkwargs...,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
-# <source src="../game of life.mp4" type="video/mp4">
+# <source src="../game_of_life.mp4" type="video/mp4">
 # </video>
 # ```

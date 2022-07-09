@@ -35,7 +35,7 @@ CairoMakie.activate!() # hide
 
 # We then make a setup function that initializes the model.
 function forest_fire(; density = 0.7, griddims = (100, 100), seed = 2)
-    space = GridSpace(griddims; periodic = false, metric = :euclidean)
+    space = GridSpaceSingle(griddims; periodic = false, metric = :manhattan)
     rng = Random.MersenneTwister(seed)
     ## The `trees` field is coded such that
     ## Empty = 0, Green = 1, Burning = 2, Burnt = 3
