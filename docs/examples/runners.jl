@@ -85,7 +85,6 @@ abmvideo(
     heatkwargs = (colormap = :terrain,),
     static_preplot!
 )
-nothing # hide
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

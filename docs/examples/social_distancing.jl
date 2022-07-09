@@ -60,7 +60,6 @@ model = ball_model()
 # The agent step function for now is trivial. It is just [`move_agent!`](@ref) in
 # continuous space
 agent_step!(agent, model) = move_agent!(agent, model, model.dt)
-nothing # hide
 
 # `dt` is our time resolution, but we will talk about this more later!
 
@@ -98,7 +97,7 @@ abmvideo(
     spf = 2,
     framerate = 25,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist2.mp4" type="video/mp4">
@@ -144,7 +143,7 @@ abmvideo(
     spf = 2,
     framerate = 25,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist3.mp4" type="video/mp4">
@@ -221,7 +220,6 @@ function sir_initiation(;
 
     return model
 end
-nothing # hide
 
 # Notice the constant `steps_per_day`, which approximates how many model steps
 # correspond to one day (since the parameters we used in the previous graph SIR example
@@ -263,7 +261,6 @@ function sir_model_step!(model)
         elastic_collision!(a1, a2, :mass)
     end
 end
-nothing # hide
 
 # Notice that it is not necessary that the transmission interaction radius is the same
 # as the billiard-ball dynamics. We only have them the same here for convenience,
@@ -290,7 +287,6 @@ function recover_or_die!(agent, model)
         end
     end
 end
-nothing # hide
 
 # Alright, now we can animate this process for default parameters
 
@@ -308,7 +304,7 @@ abmvideo(
     spf = 1,
     framerate = 20,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist4.mp4" type="video/mp4">
@@ -324,7 +320,6 @@ nothing # hide
 infected(x) = count(i == :I for i in x)
 recovered(x) = count(i == :R for i in x)
 adata = [(:status, infected), (:status, recovered)]
-nothing # hide
 
 # Let's do the following runs, with different parameters probabilities
 r1, r2 = 0.04, 0.33
@@ -375,7 +370,7 @@ abmvideo(
     ac = sir_colors,
     framerate = 20,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist5.mp4" type="video/mp4">
