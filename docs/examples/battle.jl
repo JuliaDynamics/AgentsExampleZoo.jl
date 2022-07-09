@@ -337,7 +337,7 @@ am(a) = a.shape
 markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
 
 # Next, we initialize an axis and plot them
-fig = Figure()
+fig = Figure(resolution = (500, 600))
 ax = Axis(fig[1,1]; title = "Battle Royale")
 scatter!(ax, pos; color = colors, marker = markers, markersize = 25)
 e = size(model.space)[1:2] .+ 2

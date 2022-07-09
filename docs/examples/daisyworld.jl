@@ -41,19 +41,17 @@
 # and an associated `albedo` value, again set by the user.
 
 using Agents
-using Statistics: mean
-using Random # hide
+using Random
+import StatsBase
 
-mutable struct Daisy <: AbstractAgent
-    id::Int
-    pos::Dims{2}
+@agent Daisy GridAgent{2} begin
     breed::Symbol
     age::Int
     albedo::Float64 # 0-1 fraction
 end
 
-const DaisyWorld = ABM{<:GridSpaceSingle, Daisy};
-
+DaisyWorld = ABM{<:GridSpaceSingle, Daisy}
+# %% #src
 # ## World heating
 
 # Notice that the surface is not an agent but rather a standard Julia array.
@@ -123,34 +121,32 @@ function propagate!(pos, model::DaisyWorld)
 end
 
 # And if the daisies cross an age threshold, they die out.
-# Death is controlled by the `agent_step` function
-function agent_step!(agent::Daisy, model::DaisyWorld)
+# Death is controlled by the `agent_step!` function
+function daisy_step!(agent::Daisy, model::DaisyWorld)
     agent.age += 1
-    agent.age >= model.max_age && kill_agent!(agent, model)
+    agent.age ≥ model.max_age && kill_agent!(agent, model)
 end
 
 # The model step function advances Daisyworld's dynamics:
-
-function model_step!(model)
+function daisyworld_step!(model)
     for p in positions(model)
         update_surface_temperature!(p, model)
         diffuse_temperature!(p, model)
         propagate!(p, model)
     end
-    model.tick += 1
+    model.tick[] = model.tick[] + 1
     solar_activity!(model)
 end
 
 # Notice that `solar_activity!` changes the incoming solar radiation over time,
 # if the given "scenario" (a model parameter) is `:ramp`.
 # The parameter `tick` of the model keeps track of time.
-
 function solar_activity!(model::DaisyWorld)
     if model.scenario == :ramp
-        if model.tick > 200 && model.tick <= 400
+        if model.tick[] > 200 && model.tick[] ≤ 400
             model.solar_luminosity += model.solar_change
         end
-        if model.tick > 500 && model.tick <= 750
+        if model.tick[] > 500 && model.tick[] ≤ 750
             model.solar_luminosity -= model.solar_change / 2
         end
     elseif model.scenario == :change
@@ -165,10 +161,6 @@ end
 # daisies of each type to seed the planet with and what their albedo's are.
 # We also want a value for surface albedo, as well as solar intensity
 # (and we also choose between constant or time-dependent intensity with `scenario`).
-
-import StatsBase
-import DrWatson: @dict
-using Random
 
 function daisyworld(;
     griddims = (30, 30),
@@ -186,12 +178,11 @@ function daisyworld(;
 
     rng = MersenneTwister(seed)
     space = GridSpaceSingle(griddims)
-    properties = @dict max_age surface_albedo solar_luminosity solar_change scenario
-    ## Be aware that `properties` is a type unstable container.
-    ## One should create a dedicated `struct` if performance is critical!
-    properties[:tick] = 0
-    properties[:ratio] = 0.5
-    properties[:temperature] = zeros(griddims)
+    ## Here we make the model properties a `NamedTuple` to avoid type instabilities.
+    ## Because `tick` is something that we will be changing, we make it a `Ref`.
+    properties = (;max_age, surface_albedo, solar_luminosity, solar_change, scenario,
+        tick = Ref(0), ratio = 0.5, temperature = zeros(griddims)
+    )
 
     model = ABM(Daisy, space; properties, rng)
 
@@ -220,7 +211,6 @@ function daisyworld(;
     return model
 end
 
-model = daisyworld()
 
 # ## Visualizing & animating
 # %% #src
@@ -228,6 +218,7 @@ model = daisyworld()
 using InteractiveDynamics
 using CairoMakie
 CairoMakie.activate!() # hide
+model = daisyworld()
 
 # To visualize we need to define the necessary functions for [`abmplot`](@ref).
 # We will also utilize its ability to plot an underlying heatmap,
@@ -240,7 +231,7 @@ CairoMakie.activate!() # hide
 daisycolor(a::Daisy) = a.breed
 
 plotkwargs = (
-    ac=daisycolor, as = 20, am = '❀',
+    ac=daisycolor, as = 20, am = '✿',
     heatarray = :temperature,
     heatkwargs = (colorrange = (-20, 60),),
 )
@@ -248,7 +239,7 @@ fig, _ = abmplot(model; plotkwargs...)
 fig
 
 # And after a couple of steps
-Agents.step!(model, agent_step!, model_step!, 5)
+Agents.step!(model, daisy_step!, daisyworld_step!, 5)
 fig, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
 fig
 
@@ -257,8 +248,8 @@ model = daisyworld()
 abmvideo(
     "daisyworld.mp4",
     model,
-    agent_step!,
-    model_step!;
+    daisy_step!,
+    daisyworld_step!;
     title = "Daisy World",
     plotkwargs...,
 )
@@ -281,7 +272,7 @@ adata = [(black, count), (white, count)]
 
 model = daisyworld(; solar_luminosity = 1.0)
 
-agent_df, model_df = run!(model, agent_step!, model_step!, 1000; adata)
+agent_df, model_df = run!(model, daisy_step!, daisyworld_step!, 1000; adata)
 figure = Figure(resolution = (600, 400))
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
 blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
@@ -296,13 +287,13 @@ figure
 # model creation. However, we also want to see how the planet surface temperature changes
 # and would be nice to plot solar luminosity as well.
 # Thus, we define in addition
-temperature(model) = mean(model.temperature)
+temperature(model) = StatsBase.mean(model.temperature)
 mdata = [temperature, :solar_luminosity]
 
 # And we run (and plot) everything
 model = daisyworld(solar_luminosity = 1.0, scenario = :ramp)
 agent_df, model_df =
-    run!(model, agent_step!, model_step!, 1000; adata = adata, mdata = mdata)
+    run!(model, daisy_step!, daisyworld_step!, 1000; adata = adata, mdata = mdata)
 
 figure = CairoMakie.Figure(resolution = (600, 600))
 ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count", textsize = 12)
