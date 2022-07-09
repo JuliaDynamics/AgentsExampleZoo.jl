@@ -7,7 +7,7 @@
 #
 # Study this example to learn about
 # - Simple agent properties with complex model interactions
-# - Diffusion of a quantity in a `GridSpace`
+# - Diffusion of a quantity in a grid space
 # - Including a "surface property" in the model
 # - counting time in the model and having time-dependent dynamics
 # - performing interactive scientific research
@@ -33,17 +33,12 @@
 # forcing, the daisies will not be able to regulate the temperature of the planet
 # and eventually go extinct.
 
-# ## Defining the agent types
+# ## Defining the daisy type
 
 # `Daisy` has three values (other than the required
-# `id` and `pos` for an agent that lives on a [`GridSpace`](@ref). Each daisy has an `age`,
+# `id` and `pos` for an agent that lives on a [`GridSpaceSingle`](@ref). Each daisy has an `age`,
 # confined later by a maximum age set by the user, a `breed` (either `:black` or `:white`)
 # and an associated `albedo` value, again set by the user.
-# `Land` represents the surface. We could make `Land` also have an albedo field, but
-# in this world, the entire surface has the same albedo and thus we make it a model parameter.
-
-# Notice that the surface is not an agent, as per design of Agents.jl, but rather a
-# standard Julia array.
 
 using Agents
 using Statistics: mean
@@ -57,21 +52,27 @@ mutable struct Daisy <: AbstractAgent
     albedo::Float64 # 0-1 fraction
 end
 
-const DaisyWorld = ABM{<:GridSpace, Daisy};
+const DaisyWorld = ABM{<:GridSpaceSingle, Daisy};
 
 # ## World heating
 
+# Notice that the surface is not an agent but rather a standard Julia array.
+# This is something we typically instruct Agents.jl users to do:
+# not make surface properties agents (even though this is done in other ABM frameworks)
+# because it is simply much more performant to use standard arrays.
+# Hence, here the surface temperature will be a matrix with same size as the grid.
+
 # The surface temperature of the world is heated by its sun, but daisies growing upon it
-# absorb or reflect the starlight -- altering the local temperature.
+# absorb or reflect the starlight, altering the local temperature.
 
 function update_surface_temperature!(pos, model::DaisyWorld)
-    ids = ids_in_position(pos, model)
-    absorbed_luminosity = if isempty(ids) # no daisy
+    absorbed_luminosity = if isempty(pos, model) # no daisy
         ## Set luminosity via surface albedo
         (1 - model.surface_albedo) * model.solar_luminosity
     else
         ## Set luminosity via daisy albedo
-        (1 - model[ids[1]].albedo) * model.solar_luminosity
+        daisy = model[id_in_position(pos, model)]
+        (1 - daisy.albedo) * model.solar_luminosity
     end
     ## We expect local heating to be 80 ᵒC for an absorbed luminosity of 1,
     ## approximately 30 for 0.5 and approximately -273 for 0.01.
@@ -82,7 +83,7 @@ end
 
 # In addition, temperature diffuses over time
 function diffuse_temperature!(pos, model::DaisyWorld)
-    ratio = get(model.properties, :ratio, 0.5) # diffusion ratio
+    ratio = model.ratio # diffusion ratio
     npos = nearby_positions(pos, model)
     model.temperature[pos...] =
         (1 - ratio) * model.temperature[pos...] +
@@ -100,26 +101,23 @@ end
 # close to them.
 
 function propagate!(pos, model::DaisyWorld)
-    ids = ids_in_position(pos, model)
-    if !isempty(ids)
-        daisy = model[ids[1]]
-        temperature = model.temperature[pos...]
-        ## Set optimum growth rate to 22.5 ᵒC, with bounds of [5, 40]
-        seed_threshold = (0.1457 * temperature - 0.0032 * temperature^2) - 0.6443
-        if rand(model.rng) < seed_threshold
-            ## Collect all adjacent position that have no daisies
-            empty_neighbors = Tuple{Int,Int}[]
-            neighbors = nearby_positions(pos, model)
-            for n in neighbors
-                if isempty(ids_in_position(n, model))
-                    push!(empty_neighbors, n)
-                end
+    isempty(pos, model) && return
+    daisy = model[id_in_position(pos, model)]
+    temperature = model.temperature[pos...]
+    ## Set optimum growth rate to 22.5 ᵒC, with bounds of [5, 40]
+    seed_threshold = (0.1457 * temperature - 0.0032 * temperature^2) - 0.6443
+    if rand(model.rng) < seed_threshold
+        ## Collect all adjacent position that have no daisies
+        empty_near_pos = Tuple{Int,Int}[]
+        for near_pos in nearby_positions(pos, model)
+            if isempty(near_pos, model)
+                push!(empty_near_pos, near_pos)
             end
-            if !isempty(empty_neighbors)
-                ## Seed a new daisy in one of those position
-                seeding_place = rand(model.rng, empty_neighbors)
-                add_agent!(seeding_place, model, daisy.breed, 0, daisy.albedo)
-            end
+        end
+        if !isempty(empty_near_pos)
+            ## Seed a new daisy in one of those position
+            seeding_place = rand(model.rng, empty_near_pos)
+            add_agent!(seeding_place, model, daisy.breed, 0, daisy.albedo)
         end
     end
 end
@@ -187,9 +185,12 @@ function daisyworld(;
 )
 
     rng = MersenneTwister(seed)
-    space = GridSpace(griddims)
+    space = GridSpaceSingle(griddims)
     properties = @dict max_age surface_albedo solar_luminosity solar_change scenario
+    ## Be aware that `properties` is a type unstable container.
+    ## One should create a dedicated `struct` if performance is critical!
     properties[:tick] = 0
+    properties[:ratio] = 0
     properties[:temperature] = zeros(griddims)
 
     model = ABM(Daisy, space; properties, rng)
@@ -219,15 +220,14 @@ function daisyworld(;
     return model
 end
 
+model = daisyworld()
+
 # ## Visualizing & animating
 # %% #src
 # Lets run the model with constant solar isolation and visualize the result
-
 using InteractiveDynamics
 using CairoMakie
 CairoMakie.activate!() # hide
-
-model = daisyworld()
 
 # To visualize we need to define the necessary functions for [`abmplot`](@ref).
 # We will also utilize its ability to plot an underlying heatmap,
@@ -240,7 +240,7 @@ model = daisyworld()
 daisycolor(a::Daisy) = a.breed
 
 plotkwargs = (
-    ac=daisycolor, as = 12, am = '♠',
+    ac=daisycolor, as = 20, am = '❀',
     heatarray = :temperature,
     heatkwargs = (colorrange = (-20, 60),),
 )
@@ -284,9 +284,9 @@ model = daisyworld(; solar_luminosity = 1.0)
 agent_df, model_df = run!(model, agent_step!, model_step!, 1000; adata)
 figure = Figure(resolution = (600, 400))
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
-blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :red)
-whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :blue)
-figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"], textsize = 12)
+blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
+whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :orange)
+Legend(figure[1, 2], [blackl, whitel], ["black", "white"],labelsize = 12)
 figure
 
 # ## Time dependent dynamics
