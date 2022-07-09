@@ -29,17 +29,17 @@ using CairoMakie
 CairoMakie.activate!() # hide
 
 @agent Automata GridAgent{2} begin end
-nothing # hide
 
 # The agent type `Automata` is effectively a dummy agent, for which we will invoke
 # [`dummystep`](@ref) when stepping the model.
 
 # We then make a setup function that initializes the model.
-function forest_fire(; density = 0.7, griddims = (100, 100))
+function forest_fire(; density = 0.7, griddims = (100, 100), seed = 2)
     space = GridSpace(griddims; periodic = false, metric = :euclidean)
+    rng = Random.MersenneTwister(seed)
     ## The `trees` field is coded such that
     ## Empty = 0, Green = 1, Burning = 2, Burnt = 3
-    forest = ABM(Automata, space; properties = (trees = zeros(Int, griddims),))
+    forest = ABM(Automata, space; rng, properties = (trees = zeros(Int, griddims),))
     for I in CartesianIndices(forest.trees)
         if rand(forest.rng) < density
             ## Set the trees at the left edge on fire
@@ -66,7 +66,6 @@ function tree_step!(forest)
         forest.trees[I] = 3
     end
 end
-nothing # hide
 
 # ## Running the model
 
@@ -80,7 +79,6 @@ count(t == 3 for t in forest.trees) # Number of burnt trees on step 11
 
 # Now we can do some data collection as well using an aggregate function `percentage`:
 
-Random.seed!(2)
 forest = forest_fire(griddims = (20, 20))
 burnt_percentage(f) = count(t == 3 for t in f.trees) / prod(size(f.trees))
 mdata = [burnt_percentage]
@@ -105,9 +103,7 @@ fig, _ = abmplot(forest; plotkwargs...)
 fig
 
 # or animate it
-Random.seed!(10)
-forest = forest_fire(density = 0.7)
-add_agent!(forest) # Add one dummy agent so that abmvideo will allow us to plot.
+forest = forest_fire(density = 0.7, seed = 10)
 abmvideo(
     "forest.mp4",
     forest,
@@ -120,7 +116,7 @@ abmvideo(
     title = "Forest Fire",
     plotkwargs...,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../forest.mp4" type="video/mp4">

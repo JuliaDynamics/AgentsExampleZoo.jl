@@ -190,7 +190,7 @@ function daisyworld(;
     ## Be aware that `properties` is a type unstable container.
     ## One should create a dedicated `struct` if performance is critical!
     properties[:tick] = 0
-    properties[:ratio] = 0
+    properties[:ratio] = 0.5
     properties[:temperature] = zeros(griddims)
 
     model = ABM(Daisy, space; properties, rng)
