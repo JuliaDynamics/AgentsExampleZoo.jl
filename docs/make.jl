@@ -4,7 +4,8 @@ NEW_EXAMPLES = [
 ]
 # Once approved, move examples here:
 EXISTING_EXAMPLES = [
-    # The following are sorted ALPHABETICALLY!!!
+    # The following are sorted ALPHABETICALLY
+    # according to their title in their example file!
     "growing_bacteria.jl",
     "battle.jl",
     "social_distancing.jl",
@@ -39,10 +40,6 @@ import Literate
 println("InteractiveDynamics...")
 using InteractiveDynamics
 
-ENV["GKS_ENCODING"] = "utf-8"
-println("Converting Examples...")
-
-
 # download the themes
 println("Theme-ing")
 using DocumenterTools:Themes
@@ -74,6 +71,7 @@ Themes.compile(
 )
 
 # %% Build examples with Literate.jl
+println("Converting Examples...")
 indir = joinpath(@__DIR__, "examples")
 outdir = joinpath(@__DIR__, "src", "examples")
 rm(outdir; force = true, recursive = true) # cleans up previous examples
