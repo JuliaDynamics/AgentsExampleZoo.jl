@@ -5,21 +5,20 @@ NEW_EXAMPLES = [
 # Once approved, move examples here:
 EXISTING_EXAMPLES = [
     # The following are sorted ALPHABETICALLY!!!
-    "Bacteria Growth" => "growing_bacteria.jl",
-    "Battle Royale" => "battle.jl",
-    "Continuous space social distancing" => "social_distancing.jl",
-    "Conway's game of life" => "game_of_life_2D_CA.jl",
-    "Daisyworld" => "daisyworld.jl",
-    "Forest fire" => "forest_fire.jl",
-    "Fractal Growth" => "fractal_growth.jl",
-    "Hegselmann-Krause opinion dynamics" => "hk.jl",
-    "Maze Solver" => "maze.jl",
-    "Mountain Runners" => "runners.jl",
-    "Opinion spread" => "opinion_spread.jl",
-    "Predator-Prey" => "predator_prey_fast.jl",
-    "Sugarscape" => "sugarscape.jl",
-    "Wealth distribution" => "wealth_distribution.jl",
-    "Wright-Fisher model of evolution" => "wright-fisher.jl",
+    "growing_bacteria.jl",
+    "battle.jl",
+    "social_distancing.jl",
+    "game_of_life_2D_CA.jl",
+    "daisyworld.jl",
+    "forest_fire.jl",
+    "fractal_growth.jl",
+    "hk.jl",
+    "maze.jl",
+    "runners.jl",
+    "opinion_spread.jl",
+    "sugarscape.jl",
+    "wealth_distribution.jl",
+    "wright-fisher.jl",
 ]
 
 
