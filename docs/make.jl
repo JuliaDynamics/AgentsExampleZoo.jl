@@ -79,7 +79,7 @@ mkpath(outdir)
 
 examples = isempty(NEW_EXAMPLES) ? EXISTING_EXAMPLES : NEW_EXAMPLES
 built_examples = String[]
-for (title, file) in examples
+for file in examples
     Literate.markdown(joinpath(indir, file), outdir; credit = false)
     push!(built_examples, "examples/"*file[1:end-3]*".md")
 end
