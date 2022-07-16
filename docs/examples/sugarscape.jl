@@ -317,7 +317,7 @@ ax = Axis(figure[2, 1]; xlabel="Wealth", ylabel="Number of agents")
 histdata = Observable(adata[adata.step .== 20, :wealth])
 hist!(ax, histdata; bar_position=:step)
 ylims!(ax, (0, 50))
-record(figure, "sugarhist.mp4", 0:100; framerate=3) do i
+record(figure, "sugarhist.mp4", 0:50; framerate=3) do i
     histdata[] = adata[adata.step .== i, :wealth]
     step_number[] = i
     xlims!(ax, (0, max(histdata[]...)))

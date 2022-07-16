@@ -120,7 +120,7 @@ abmvideo(
     game_of_life_step!;
     title = "Game of Life",
     framerate = 10,
-    frames = 200,
+    frames = 60,
     plotkwargs...,
 )
 

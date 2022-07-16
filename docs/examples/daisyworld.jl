@@ -254,6 +254,7 @@ abmvideo(
     daisy_step!,
     daisyworld_step!;
     title = "Daisy World",
+    frames = 60,
     plotkwargs...,
 )
 
@@ -280,7 +281,7 @@ figure = Figure(resolution = (600, 400))
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
 blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
 whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :orange)
-Legend(figure[1, 2], [blackl, whitel], ["black", "white"],labelsize = 12)
+Legend(figure[1, 2], [blackl, whitel], ["black", "white"], labelsize = 12)
 figure
 
 # ## Time dependent dynamics
@@ -299,13 +300,13 @@ agent_df, model_df =
     run!(model, daisy_step!, daisyworld_step!, 1000; adata = adata, mdata = mdata)
 
 figure = CairoMakie.Figure(resolution = (600, 600))
-ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count", textsize = 12)
+ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
 blackl = lines!(ax1, agent_df[!, :step], agent_df[!, :count_black], color = :red)
 whitel = lines!(ax1, agent_df[!, :step], agent_df[!, :count_white], color = :blue)
-figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"], textsize = 12)
+figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"])
 
-ax2 = figure[2, 1] = Axis(figure, ylabel = "temperature", textsize = 12)
-ax3 = figure[3, 1] = Axis(figure, xlabel = "tick", ylabel = "L", textsize = 12)
+ax2 = figure[2, 1] = Axis(figure, ylabel = "temperature")
+ax3 = figure[3, 1] = Axis(figure, xlabel = "tick", ylabel = "L")
 lines!(ax2, model_df[!, :step], model_df[!, :temperature], color = :red)
 lines!(ax3, model_df[!, :step], model_df[!, :solar_luminosity], color = :red)
 for ax in (ax1, ax2); ax.xticklabelsvisible = false; end

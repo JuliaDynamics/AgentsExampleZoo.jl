@@ -138,7 +138,7 @@ abmvideo(
     am = '■',
     as = 20,
     framerate = 20,
-    frames = 100,
+    frames = 60,
     title = "Opinion Spread",
 )
 

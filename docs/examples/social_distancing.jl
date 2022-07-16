@@ -298,7 +298,7 @@ abmvideo(
     sir_agent_step!,
     sir_model_step!;
     title = "SIR model",
-    frames = 100,
+    frames = 50,
     ac = sir_colors,
     as = 10,
     spf = 1,
