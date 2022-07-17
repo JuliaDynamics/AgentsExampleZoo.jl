@@ -28,10 +28,7 @@
 
 using Agents, Random
 
-mutable struct SocialAgent <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Float64}
-    vel::NTuple{2,Float64}
+@agent SocialAgent ContinuousAgent{2} begin
     mass::Float64
 end
 
@@ -40,7 +37,7 @@ end
 
 # Let's also initialize a trivial model with continuous space
 function ball_model(; speed = 0.002)
-    space2d = ContinuousSpace((1, 1), 0.02)
+    space2d = ContinuousSpace((1, 1); spacing = 0.02)
     model = ABM(SocialAgent, space2d, properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
 
     ## And add some agents to the model
@@ -60,7 +57,6 @@ model = ball_model()
 # The agent step function for now is trivial. It is just [`move_agent!`](@ref) in
 # continuous space
 agent_step!(agent, model) = move_agent!(agent, model, model.dt)
-nothing # hide
 
 # `dt` is our time resolution, but we will talk about this more later!
 
@@ -98,7 +94,7 @@ abmvideo(
     spf = 2,
     framerate = 25,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist2.mp4" type="video/mp4">
@@ -144,7 +140,7 @@ abmvideo(
     spf = 2,
     framerate = 25,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist3.mp4" type="video/mp4">
@@ -156,10 +152,7 @@ nothing # hide
 # (see previous example).
 # They can be infected with a disease and transfer the disease to other agents around them.
 
-mutable struct PoorSoul <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Float64}
-    vel::NTuple{2,Float64}
+@agent PoorSoul ContinuousAgent{2} begin
     mass::Float64
     days_infected::Int  # number of days since is infected
     status::Symbol  # :S, :I or :R
@@ -194,7 +187,7 @@ function sir_initiation(;
     βmax = 0.8,
 )
 
-    properties = @dict(
+    properties = (;
         infection_period,
         reinfection_probability,
         detection_time,
@@ -202,7 +195,7 @@ function sir_initiation(;
         interaction_radius,
         dt,
     )
-    space = ContinuousSpace((1,1), 0.02)
+    space = ContinuousSpace((1,1); spacing = 0.02)
     model = ABM(PoorSoul, space, properties = properties, rng = MersenneTwister(seed))
 
     ## Add initial individuals
@@ -221,7 +214,6 @@ function sir_initiation(;
 
     return model
 end
-nothing # hide
 
 # Notice the constant `steps_per_day`, which approximates how many model steps
 # correspond to one day (since the parameters we used in the previous graph SIR example
@@ -263,7 +255,6 @@ function sir_model_step!(model)
         elastic_collision!(a1, a2, :mass)
     end
 end
-nothing # hide
 
 # Notice that it is not necessary that the transmission interaction radius is the same
 # as the billiard-ball dynamics. We only have them the same here for convenience,
@@ -290,7 +281,6 @@ function recover_or_die!(agent, model)
         end
     end
 end
-nothing # hide
 
 # Alright, now we can animate this process for default parameters
 
@@ -302,13 +292,13 @@ abmvideo(
     sir_agent_step!,
     sir_model_step!;
     title = "SIR model",
-    frames = 100,
+    frames = 50,
     ac = sir_colors,
     as = 10,
     spf = 1,
     framerate = 20,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist4.mp4" type="video/mp4">
@@ -324,7 +314,6 @@ nothing # hide
 infected(x) = count(i == :I for i in x)
 recovered(x) = count(i == :R for i in x)
 adata = [(:status, infected), (:status, recovered)]
-nothing # hide
 
 # Let's do the following runs, with different parameters probabilities
 r1, r2 = 0.04, 0.33
@@ -375,7 +364,7 @@ abmvideo(
     ac = sir_colors,
     framerate = 20,
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../socialdist5.mp4" type="video/mp4">

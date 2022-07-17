@@ -62,7 +62,7 @@ abmvideo(
     model,
     agent_step!;
     figurekwargs = (resolution=(700,700),),
-    frames=310,
+    frames=60,
     framerate=30,
     ac=:red,
     as=11,

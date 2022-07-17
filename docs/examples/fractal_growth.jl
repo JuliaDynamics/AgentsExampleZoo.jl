@@ -65,6 +65,7 @@ function initialize_model(;
     clockwise_fraction = 0.0,
     min_radius = 1.0, # minimum radius of any particle
     max_radius = 2.0, # maximum radius of any particle
+    seed = 42,
 )
     properties = Dict(
         :speed => speed,
@@ -78,7 +79,7 @@ function initialize_model(;
     )
     ## space is periodic to allow particles going off one edge to wrap around to the opposite
     space = ContinuousSpace(space_extents, 1.0; periodic = true)
-    model = ABM(Particle, space; properties)
+    model = ABM(Particle, space; properties, rng = Random.MersenneTwister(seed))
     center = space_extents ./ 2.0
     for i in 1:initial_particles
         particle = Particle(
@@ -156,7 +157,6 @@ end
 
 # We run the model using the `InteractiveDynamics` package with `GLMakie` backend so
 # the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
-Random.seed!(42) # hide
 model = initialize_model()
 
 using InteractiveDynamics
@@ -178,13 +178,13 @@ abmvideo(
     ac = particle_color,
     as = particle_size,
     am = '●',
-    spf = 10,
-    frames = 600,
+    spf = 20,
+    frames = 60,
     framerate = 25,
     title = "Fractal Growth",
     scatterkwargs = (strokewidth = 0.5, strokecolor = :white),
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../fractal.mp4" type="video/mp4">
@@ -196,7 +196,7 @@ nothing # hide
 
 # ```julia
 # using InteractiveDynamics
-# using GLMakie
+# using GLMakie # This plotting backend allows for interactivity
 # model = initialize_model()
 # ```
 

@@ -17,8 +17,7 @@
 # ## Core structures: space-less
 # We start by defining the Agent type and initializing the model.
 using Agents
-using Random # hide
-Random.seed!(5) # hide
+using Random
 
 mutable struct WealthAgent <: AbstractAgent
     id::Int
@@ -29,9 +28,9 @@ end
 # there is no space structure to this example.
 # We can also make a very simple [`AgentBasedModel`](@ref) for our model.
 
-function wealth_model(; numagents = 100, initwealth = 1)
-    model = ABM(WealthAgent, scheduler = Schedulers.randomly)
-    for i in 1:numagents
+function wealth_model(; numagents = 100, initwealth = 1, seed = 5)
+    model = ABM(WealthAgent; scheduler = Schedulers.randomly, rng = Random.Xoshiro(seed))
+    for _ in 1:numagents
         add_agent!(model, initwealth)
     end
     return model
@@ -46,7 +45,6 @@ function agent_step!(agent, model)
     agent.wealth -= 1
     ragent.wealth += 1
 end
-nothing # hide
 
 # We use `random_agent` as a convenient way to just grab a second agent.
 # (this may return the same agent as `agent`, but we don't care in the long run)
@@ -95,7 +93,7 @@ end
 function wealth_model_2D(; dims = (25, 25), wealth = 1, M = 1000)
     space = GridSpace(dims, periodic = true)
     model = ABM(WealthInSpace, space; scheduler = Schedulers.randomly)
-    for i in 1:M # add agents in random positions
+    for _ in 1:M # add agents in random positions
         add_agent!(model, wealth)
     end
     return model
@@ -119,7 +117,6 @@ function agent_step_2d!(agent, model)
         random_neighbor_agent.wealth += 1
     end
 end
-nothing # hide
 
 # ## Running the model with space
 init_wealth = 4

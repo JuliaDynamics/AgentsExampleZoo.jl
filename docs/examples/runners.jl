@@ -76,7 +76,7 @@ abmvideo(
     model,
     agent_step!;
     figurekwargs = (resolution = (700, 700),),
-    frames = 410,
+    frames = 200,
     framerate = 45,
     ac = :black,
     as = 8,
@@ -85,7 +85,6 @@ abmvideo(
     heatkwargs = (colormap = :terrain,),
     static_preplot!
 )
-nothing # hide
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

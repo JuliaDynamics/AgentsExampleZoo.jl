@@ -107,9 +107,7 @@
 
 using Agents, Random
 
-mutable struct SugarSeeker <: AbstractAgent
-    id::Int
-    pos::Dims{2}
+@agent SugarSeeker GridAgent{2} begin
     vision::Int
     metabolic_rate::Int
     age::Int
@@ -117,10 +115,11 @@ mutable struct SugarSeeker <: AbstractAgent
     wealth::Int
 end
 
-# Functions `distances` and `sugar_caps` produce a matrix for the distribution of sugar capacities."
+# Functions `distances` and `sugar_caps` produce a matrix
+# for the distribution of sugar capacities.
 
-function distances(pos, sugar_peaks, max_sugar)
-    all_dists = Array{Int,1}(undef, length(sugar_peaks))
+function distances(pos, sugar_peaks)
+    all_dists = zeros(Int, length(sugar_peaks))
     for (ind, peak) in enumerate(sugar_peaks)
         d = round(Int, sqrt(sum((pos .- peak) .^ 2)))
         all_dists[ind] = d
@@ -131,7 +130,7 @@ end
 function sugar_caps(dims, sugar_peaks, max_sugar, dia = 4)
     sugar_capacities = zeros(Int, dims)
     for i in 1:dims[1], j in 1:dims[2]
-        sugar_capacities[i, j] = distances((i, j), sugar_peaks, max_sugar)
+        sugar_capacities[i, j] = distances((i, j), sugar_peaks)
     end
     for i in 1:dims[1]
         for j in 1:dims[2]
@@ -156,7 +155,7 @@ function sugarscape(;
 )
     sugar_capacities = sugar_caps(dims, sugar_peaks, max_sugar, 6)
     sugar_values = deepcopy(sugar_capacities)
-    space = GridSpace(dims)
+    space = GridSpaceSingle(dims)
     properties = Dict(
         :growth_rate => growth_rate,
         :N => N,
@@ -174,7 +173,7 @@ function sugarscape(;
         properties = properties,
         rng = MersenneTwister(seed)
     )
-    for ag in 1:N
+    for _ in 1:N
         add_agent_single!(
             model,
             rand(model.rng, vision_dist[1]:vision_dist[2]),
@@ -199,57 +198,53 @@ Colorbar(fig[1, 2], hm, width = 20)
 fig
 
 # ## Defining stepping functions
-
-# Now we define the stepping functions that handle the time evolution of the model
-
+# Now we define the stepping functions that handle the time evolution of the model.
+# The model stepping function controls the sugar growth:
 function model_step!(model)
-    ## At each position, sugar grows back at a rate of $\alpha$ units
+    ## At each position, sugar grows back at a rate of α units
     ## per time-step up to the cell's capacity c.
-    togrow = findall(
-        x -> model.sugar_values[x] < model.sugar_capacities[x],
-        1:length(positions(model)),
-    )
-    model.sugar_values[togrow] .+= model.growth_rate
-end
-
-function movement!(agent, model)
-    newsite = agent.pos
-    ## find all unoccupied position within vision
-    neighbors = nearby_positions(agent.pos, model, agent.vision)
-    empty = collect(empty_positions(model))
-    if length(empty) > 0
-        ## identify the one(s) with greatest amount of sugar
-        available_sugar = (model.sugar_values[x,y] for (x, y) in empty)
-        maxsugar = maximum(available_sugar)
-        if maxsugar > 0
-            sugary_sites_inds = findall(x -> x == maxsugar, collect(available_sugar))
-            sugary_sites = empty[sugary_sites_inds]
-            ## select the nearest one (randomly if more than one)
-            for dia in 1:(agent.vision)
-                np = nearby_positions(agent.pos, model, dia)
-                suitable = intersect(np, sugary_sites)
-                if length(suitable) > 0
-                    newsite = rand(model.rng, suitable)
-                    break
-                end
-            end
-            ## move there and collect all the sugar in it
-            newsite != agent.pos && move_agent!(agent, newsite, model)
+    @inbounds for pos in positions(model)
+        if model.sugar_values[pos...] < model.sugar_capacities[pos...]
+            model.sugar_values[pos...] += model.growth_rate
         end
     end
-    ## update wealth (collected - consumed)
-    agent.wealth += (model.sugar_values[newsite...] - agent.metabolic_rate)
-    model.sugar_values[newsite...] = 0
+    return
+end
+
+# The agent stepping function contains the dynamics of the model:
+function agent_step!(agent, model)
+    move_and_collect!(agent, model)
+    replacement!(agent, model)
+end
+
+function move_and_collect!(agent, model)
+    ## Go through all unoccupied positions within vision, and consider the empty ones.
+    ## From those, identify the one with greatest amount of sugar, and go there!
+    max_sugar_pos = agent.pos
+    max_sugar = model.sugar_values[max_sugar_pos...]
+    for pos in nearby_positions(agent, model, agent.vision)
+        isempty(pos, model) || continue
+        sugar = model.sugar_values[pos...]
+        if sugar > max_sugar
+            max_sugar = sugar
+            max_sugar_pos = pos
+        end
+    end
+    ## Move to the max sugar position (which could be where we are already)
+    move_agent!(agent, max_sugar_pos, model)
+    ## Collect the sugar there and update wealth (collected - consumed)
+    agent.wealth += (model.sugar_values[max_sugar_pos...] - agent.metabolic_rate)
+    model.sugar_values[max_sugar_pos...] = 0
     ## age
     agent.age += 1
+    return
 end
 
 function replacement!(agent, model)
     ## If the agent's sugar wealth become zero or less, it dies
-    if agent.wealth <= 0 || agent.age >= agent.max_age
+    if agent.wealth ≤ 0 || agent.age ≥ agent.max_age
         kill_agent!(agent, model)
-        ## Whenever an agent dies, a young one is added to a random pos.
-        ## New agent has random attributes
+        ## Whenever an agent dies, a young one is added to a random empty position
         add_agent_single!(
             model,
             rand(model.rng, model.vision_dist[1]:model.vision_dist[2]),
@@ -261,19 +256,19 @@ function replacement!(agent, model)
     end
 end
 
-function agent_step!(agent, model)
-    movement!(agent, model)
-    replacement!(agent, model)
-end
-
 # ## Plotting & Animating
 
 # We can plot the ABM and the sugar distribution side by side using [`abmplot`](@ref)
 # and standard Makie.jl commands like lifting the model observable.
+# (we could plot the sugar distribution as a heatmap, but we choose this composite
+# plot for more variaty in the example pool)
 using InteractiveDynamics
 
 model = sugarscape()
-fig, ax, abmp = abmplot(model; figkwargs = (resolution = (800, 600)))
+fig, ax, abmp = abmplot(model;
+    agent_step!, model_step!, add_controls = false,
+    figkwargs = (resolution = (800, 600))
+)
 ## Lift model observable for heatmap
 sugar = @lift($(abmp.model).sugar_values)
 axhm, hm = heatmap(fig[1,2], sugar; colormap=:thermal, colorrange=(0,4))
@@ -290,18 +285,14 @@ connect!(ax.title, t)
 ax.titlealign = :left
 fig
 
-# And proceed to animate:
 
 # We animate the evolution of both the ABM and the sugar distribution using the following
-# simple loop involving the abm stepper
-record(fig, "sugarvis.mp4"; framerate = 3) do io
-    for j in 0:50 # = total number of frames
-        recordframe!(io) # save current state
-        ## This updates the abm plot and lifted heatmap
-        Agents.step!(abmp.model, agent_step!, model_step!, 1)
-        ## This updates the title counter
-        s[] = s[] + 1
-    end
+# simple loop involving the abmstepper
+record(fig, "sugarvis.mp4", 0:100; framerate = 3) do j
+    ## This updates the abm plot and lifted heatmap
+    Agents.step!(abmp, 1)
+    ## This updates the title counter
+    s[] = s[] + 1
 end
 
 # ```@raw html
@@ -311,27 +302,29 @@ end
 # ```
 
 
-# ### Distribution of wealth across individuals
+# ## Distribution of wealth across individuals
 # First we produce some data that include the wealth
 model2 = sugarscape()
-adata, _ = run!(model2, agent_step!, model_step!, 20, adata = [:wealth])
+adata, _ = run!(model2, agent_step!, model_step!, 100, adata = [:wealth])
 adata[1:10,:]
 
 # And now we animate the evolution of the distribution of wealth
 figure = Figure(resolution = (600, 600))
-figure[1, 1] = Label(figure, title_text; textsize=20, tellwidth=false)
-ax = figure[2, 1] = Axis(figure; xlabel="Wealth", ylabel="Number of agents")
+step_number = Observable(0)
+title_text = @lift("Wealth distribution of individuals, step = $($step_number)")
+Label(figure[1, 1], title_text; textsize=20, tellwidth=false)
+ax = Axis(figure[2, 1]; xlabel="Wealth", ylabel="Number of agents")
 histdata = Observable(adata[adata.step .== 20, :wealth])
 hist!(ax, histdata; bar_position=:step)
 ylims!(ax, (0, 50))
-record(figure, "sugarhist.mp4", 0:20; framerate=3) do i
+record(figure, "sugarhist.mp4", 0:50; framerate=3) do i
     histdata[] = adata[adata.step .== i, :wealth]
-    title_text[] = "Wealth distribution of individuals, step = $i"
+    step_number[] = i
     xlims!(ax, (0, max(histdata[]...)))
 end
-nothing # hide
 
-# We see that the distribution of wealth shifts from a more or less uniform distribution to a skewed distribution.
+# We see that the distribution of wealth shifts from a more or less uniform
+# distribution to a skewed distribution resembling a power-law.
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

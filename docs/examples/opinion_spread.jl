@@ -14,25 +14,32 @@
 # They choose one of their neighbors randomly, and adopt one of the neighbor's opinions.
 # They are more likely to adopt their neighbor's opinion if they share more opinions with each other.
 
+# Notice that just like the [Forest fire](@ref) and [Conway's game of life](@ref) examples
+# this model is a Cellular Automaton: one agent exists per position and agents never
+# move, or are killed/added after model creation. This means that a much more
+# performant version can be done without any agents, but just matrices representing
+# spatial properties just like in [Conway's game of life](@ref).
+# However, some users may find more this agent-based formulation more intuitive,
+# and hence this example follows this approach.
+
 using Agents
 using InteractiveDynamics # plotting agents
 using CairoMakie # for static plotting
 CairoMakie.activate!() # hide
-using Random # hide
+using Random
 using StatsBase
 
-# ## Building the model
-# ### 1. Model creation
+# ## Model creation
 
 mutable struct Citizen <: AbstractAgent
     id::Int
-    pos::Dims{2}
+    pos::NTuple{2, Int}
     stabilized::Bool
     opinion::Array{Int,1}
     prev_opinion::Array{Int,1}
 end
 
-function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4)
+function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, seed = 648)
     space = GridSpace(dims)
     properties = Dict(:nopinions => nopinions)
     model = AgentBasedModel(
@@ -40,6 +47,7 @@ function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4)
         space,
         scheduler = Schedulers.randomly,
         properties = properties,
+        rng = Random.MersenneTwister(seed),
     )
     for pos in positions(model)
         add_agent!(
@@ -53,7 +61,18 @@ function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4)
     return model
 end
 
-# ### 2. Stepping functions
+# ## Stepping functions
+function agent_step!(agent, model)
+    update_prev_opinion!(agent, model)
+    adopt!(agent, model)
+    stabilize!(agent)
+end
+
+function update_prev_opinion!(agent, model)
+    for i in 1:(model.nopinions)
+        agent.prev_opinion[i] = agent.opinion[i]
+    end
+end
 
 function adopt!(agent, model)
     neighbor = sample(model.rng, collect(nearby_ids(agent, model))) # Randomly select a neighbor.
@@ -68,24 +87,12 @@ function adopt!(agent, model)
     end
 end
 
-function update_prev_opinion!(agent, model)
-    for i in 1:(model.nopinions)
-        agent.prev_opinion[i] = agent.opinion[i]
-    end
-end
-
-function is_stabilized!(agent, model)
+function stabilize!(agent)
     if agent.prev_opinion == agent.opinion
         agent.stabilized = true
     else
         agent.stabilized = false
     end
-end
-
-function agent_step!(agent, model)
-    update_prev_opinion!(agent, model)
-    adopt!(agent, model)
-    is_stabilized!(agent, model)
 end
 
 # ## Running the model
@@ -117,10 +124,9 @@ ax =
 lines!(ax, 1:size(agentdata, 1), agentdata.count_stabilized, linewidth = 2, color = :blue)
 f
 
-# ### Animation
+# ## Animation
 
 # Here is an animation that shows the stabilization of agent opinions over time.
-Random.seed!(648) # hide
 ac(agent) = agent.stabilized == true ? :purple : :green
 model = create_model(nopinions = 3, levels_per_opinion = 4)
 
@@ -132,10 +138,10 @@ abmvideo(
     am = '■',
     as = 20,
     framerate = 20,
-    frames = 100,
+    frames = 60,
     title = "Opinion Spread",
 )
-nothing # hide
+
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../opinion.mp4" type="video/mp4">
