@@ -101,7 +101,7 @@ model = build_model(rules)
 
 # We use the [`InteractiveDynamics.abmvideo`](@ref) for creating an animation and saving it to an mp4
 using InteractiveDynamics
-import CairoMakie
+using CairoMakie
 CairoMakie.activate!() # hide
 
 plotkwargs = (

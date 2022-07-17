@@ -28,10 +28,7 @@
 
 using Agents, Random
 
-mutable struct SocialAgent <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Float64}
-    vel::NTuple{2,Float64}
+@agent SocialAgent ContinuousAgent{2} begin
     mass::Float64
 end
 
@@ -40,7 +37,7 @@ end
 
 # Let's also initialize a trivial model with continuous space
 function ball_model(; speed = 0.002)
-    space2d = ContinuousSpace((1, 1), 0.02)
+    space2d = ContinuousSpace((1, 1); spacing = 0.02)
     model = ABM(SocialAgent, space2d, properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
 
     ## And add some agents to the model
@@ -155,10 +152,7 @@ abmvideo(
 # (see previous example).
 # They can be infected with a disease and transfer the disease to other agents around them.
 
-mutable struct PoorSoul <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Float64}
-    vel::NTuple{2,Float64}
+@agent PoorSoul ContinuousAgent{2} begin
     mass::Float64
     days_infected::Int  # number of days since is infected
     status::Symbol  # :S, :I or :R
@@ -193,7 +187,7 @@ function sir_initiation(;
     βmax = 0.8,
 )
 
-    properties = @dict(
+    properties = (;
         infection_period,
         reinfection_probability,
         detection_time,
@@ -201,7 +195,7 @@ function sir_initiation(;
         interaction_radius,
         dt,
     )
-    space = ContinuousSpace((1,1), 0.02)
+    space = ContinuousSpace((1,1); spacing = 0.02)
     model = ABM(PoorSoul, space, properties = properties, rng = MersenneTwister(seed))
 
     ## Add initial individuals

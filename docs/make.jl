@@ -29,7 +29,7 @@ cd(@__DIR__)
 using Pkg
 Pkg.activate(@__DIR__)
 CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
-CI && Pkg.instantiate()
+Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
@@ -87,7 +87,10 @@ end
 
 # %%
 println("Documentation Build")
-ENV["JULIA_DEBUG"] = "Documenter"
+if !isempty(NEW_EXAMPLES)
+    ENV["JULIA_DEBUG"] = "Documenter"
+end
+
 makedocs(
     modules = [Agents, InteractiveDynamics],
     sitename = "Agents.jl Example Zoo",
