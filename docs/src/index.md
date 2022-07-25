@@ -8,7 +8,7 @@ The examples here were built with versions
 
 ```@example MAIN
 using Pkg
-Pkg.status(["Agents", "InteractiveDynamics"];
+Pkg.status(["Agents", "InteractiveDynamics", "CairoMakie"];
     mode = PKGMODE_MANIFEST, io=stdout
 )
 ```

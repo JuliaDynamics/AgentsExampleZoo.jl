@@ -44,15 +44,13 @@
 
 # ## Model Setup
 
-using Random # hide
 using Agents
+using Random
 using InteractiveDynamics
 using CairoMakie
 CairoMakie.activate!() # hide
 
-mutable struct Fighter <: AbstractAgent
-    id::Int
-    pos::Dims{3}
+@agent Fighter GridAgent{3} begin
     has_prisoner::Bool
     capture_time::Int
     shape::Symbol # shape of the fighter conveys what action they are currently doing
@@ -65,11 +63,12 @@ end
 # their level.
 
 # Now let's set up the battle field:
-function battle(; fighters = 50)
+function battle(; fighters = 50, seed = 6547)
     model = ABM(
         Fighter,
         GridSpace((100, 100, 10); periodic = false);
         scheduler = Schedulers.randomly,
+        rng = Random.Xoshiro(seed),
     )
 
     n = 0
@@ -84,7 +83,6 @@ function battle(; fighters = 50)
     return model
 end
 
-Random.seed!(6547) # hide
 model = battle()
 
 # 50 opponents positioned randomly on a 100x100 grid, with no escape
@@ -319,20 +317,19 @@ function agent_step!(agent, model)
             end
         end
     end
-
-    return nothing
+    return
 end
 
 # ## Let the Battle Begin
 # We need to write entirely custom plotting here, because we have a 3D space
-# (that would be plotted as 3D), but we actually only want to plot the first
+# (that would normally be plotted as 3D), but we actually only want to plot the first
 # two dimensions of the space. Thankfully, the infastructure of `ABMObservable` makes this
 # straightforward.
 abmobs = ABMObservable(model; agent_step!)
 modelobs = abmobs.model
 
 # First, we make the positions, colors and markers observables for the agents
-by_id = Schedulers.by_id
+by_id = Schedulers.ByID()
 pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs)
 ac(agent) = to_color(cgrad(:tab10)[level(agent)])
 colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs)
@@ -340,10 +337,10 @@ am(a) = a.shape
 markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
 
 # Next, we initialize an axis and plot them
-fig = Figure()
+fig = Figure(resolution = (500, 600))
 ax = Axis(fig[1,1]; title = "Battle Royale")
-scatter!(ax, pos; color = colors, marker = markers, markersize = 15)
-e = size(model.space.s)[1:2] .+ 2
+scatter!(ax, pos; color = colors, marker = markers, markersize = 25)
+e = size(model.space)[1:2] .+ 2
 o = zero.(e) .- 2
 xlims!(ax, o[1], e[1])
 ylims!(ax, o[2], e[2])
@@ -381,12 +378,10 @@ step!(abmobs, 5)
 fig
 
 # Alright, a simple call to the `record` function can make a video of the process:
-modelobs[] = battle()
-record(fig, "battle.mp4", 1:225; framerate = 10) do i
+record(fig, "battle.mp4", 1:200; framerate = 10) do i
     ax.title = "Battle Royale, step = $(i)"
-    Agents.step!(modelobs, agent_step!, 1)
+    Agents.step!(abmobs, 1)
 end
-nothing # hide
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

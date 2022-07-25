@@ -201,7 +201,7 @@ nothing # hide
 abmvideo(
     "bacteria.mp4", model, agent_step!, model_step!;
     am = cassini_oval, ac = bacteria_color,
-    spf = 50, framerate = 30, frames = 200,
+    spf = 50, framerate = 30, frames = 100,
     title = "Growing bacteria"
 )
 

@@ -4,22 +4,22 @@ NEW_EXAMPLES = [
 ]
 # Once approved, move examples here:
 EXISTING_EXAMPLES = [
-    # The following are sorted ALPHABETICALLY!!!
-    "Bacteria Growth" => "growing_bacteria.jl",
-    "Battle Royale" => "battle.jl",
-    "Continuous space social distancing" => "social_distancing.jl",
-    "Conway's game of life" => "game_of_life_2D_CA.jl",
-    "Daisyworld" => "daisyworld.jl",
-    "Forest fire" => "forest_fire.jl",
-    "Fractal Growth" => "fractal_growth.jl",
-    "Hegselmann-Krause opinion dynamics" => "hk.jl",
-    "Maze Solver" => "maze.jl",
-    "Mountain Runners" => "runners.jl",
-    "Opinion spread" => "opinion_spread.jl",
-    "Predator-Prey" => "predator_prey_fast.jl",
-    "Sugarscape" => "sugarscape.jl",
-    "Wealth distribution" => "wealth_distribution.jl",
-    "Wright-Fisher model of evolution" => "wright-fisher.jl",
+    # The following are sorted ALPHABETICALLY
+    # according to their title in their example file!
+    # "growing_bacteria.jl",
+    "battle.jl",
+    "social_distancing.jl",
+    "game_of_life_2D_CA.jl",
+    "daisyworld.jl",
+    "forest_fire.jl",
+    "fractal_growth.jl",
+    "hk.jl",
+    "maze.jl",
+    "runners.jl",
+    "opinion_spread.jl",
+    "sugarscape.jl",
+    "wealth_distribution.jl",
+    "wright-fisher.jl",
 ]
 
 
@@ -29,7 +29,7 @@ cd(@__DIR__)
 using Pkg
 Pkg.activate(@__DIR__)
 CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
-CI && Pkg.instantiate()
+Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
@@ -39,10 +39,6 @@ println("Literate...")
 import Literate
 println("InteractiveDynamics...")
 using InteractiveDynamics
-
-ENV["GKS_ENCODING"] = "utf-8"
-println("Converting Examples...")
-
 
 # download the themes
 println("Theme-ing")
@@ -75,6 +71,7 @@ Themes.compile(
 )
 
 # %% Build examples with Literate.jl
+println("Converting Examples...")
 indir = joinpath(@__DIR__, "examples")
 outdir = joinpath(@__DIR__, "src", "examples")
 rm(outdir; force = true, recursive = true) # cleans up previous examples
@@ -82,7 +79,7 @@ mkpath(outdir)
 
 examples = isempty(NEW_EXAMPLES) ? EXISTING_EXAMPLES : NEW_EXAMPLES
 built_examples = String[]
-for (title, file) in examples
+for file in examples
     Literate.markdown(joinpath(indir, file), outdir; credit = false)
     push!(built_examples, "examples/"*file[1:end-3]*".md")
 end
@@ -90,7 +87,10 @@ end
 
 # %%
 println("Documentation Build")
-ENV["JULIA_DEBUG"] = "Documenter"
+if !isempty(NEW_EXAMPLES)
+    ENV["JULIA_DEBUG"] = "Documenter"
+end
+
 makedocs(
     modules = [Agents, InteractiveDynamics],
     sitename = "Agents.jl Example Zoo",
