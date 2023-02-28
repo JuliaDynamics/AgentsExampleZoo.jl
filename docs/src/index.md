@@ -24,7 +24,7 @@ Making a discrete grid is perhaps the easiest way to conceptualise space in a mo
 That is why the main example of Agents.jl documentation is the Schelling model on a discrete space.
 [Sugarscape](@ref) is one of our more complex examples, but gives you a good overview
 of what is possible on a grid. If you're looking for something simpler, then the
-[Forest fire](@ref) would be a good start, which is also an example of a cellular automaton.
+[Forest fire](@ref) or the [Spatial Rock-Paper-Scissors](@ref) would be a good start. The former is also an example of a cellular automaton.
 [Daisyworld](@ref) is a famous ABM example which has both agent and model dynamics, similarly with [Sugarscape](@ref).
 
 ## Continuous spaces
@@ -77,6 +77,7 @@ they don't know. In ABM worlds, that's no different.
 interactions between a pack of Wolves, a heard of Sheep and meadows of Grass.
 [Daisyworld](@ref) is an example of how a model property (in this case temperature) can
 be elevated to an agent type.
+On the other hand, [Spatial Rock-Paper-Scissors](@ref) is an example where an agent can be of different types (rock, paper or scissors). The agent's type defines how it interacts with other agents.
 
 ## Advanced visualization
 The [Sugarscape](@ref) example shows how to animate, in parallel, one plot that shows the ABM evolution, and another plot that shows any quantity a user is interested in.
