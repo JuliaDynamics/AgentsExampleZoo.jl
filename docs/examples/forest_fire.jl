@@ -91,6 +91,8 @@ data
 forest = forest_fire()
 Agents.step!(forest, dummystep, tree_step!, 1)
 
+using Plots
+
 plotkwargs = (
     add_colorbar = false,
     heatarray = :trees,
