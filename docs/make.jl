@@ -1,6 +1,7 @@
 # %% Example files
 # Add new examples here (only compiles these examples)
 NEW_EXAMPLES = [
+    "ants.jl"
 ]
 # Once approved, move examples here:
 EXISTING_EXAMPLES = [
