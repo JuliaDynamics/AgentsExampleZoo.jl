@@ -242,7 +242,7 @@ function apply_pheremone(agent::Ant, model::AntWorld; pheremone_val::Int = 60, s
     end
 end
 
-# ### diffuse
+# ### Diffuse
 # 
 # Diffuse is method used by the world to spread the pheremone chemicals to adjacent cells. 
 # The spread will place the current amount on grid space * diffusion rate / number directions to each adjacent grid space.
