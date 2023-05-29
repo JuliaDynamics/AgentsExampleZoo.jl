@@ -306,9 +306,9 @@ end
 # 
 # The model step for AntWorld. First, it diffuses the chemicals out across the grid. 
 # Then it evaporates some of pheremone from every grid space. 
+# The map! function reduces the amount of pheremone_trails.
 function antworld_step!(model::AntWorld)
     diffuse(model.pheremone_trails, model.diffusion_rate)
-    # Reduce the amount of pheremone_trails
     map!((x) -> x ≥ model.pheremone_floor ? x * (100 - model.evaporation_rate) / 100 : 0., model.pheremone_trails, model.pheremone_trails)
 
     model.tick += 1
@@ -330,6 +330,7 @@ debuglogger = ConsoleLogger(stderr, Logging.Info)
 #
 # This function builds a heat map based on various map properties to display in the grid. 
 # It shows the nest location, food locations, and pheremone trails. 
+# Set the value of the heatmap to NaN so it displays as white
 function heatmap(model::AntWorld)
     heatmap = zeros((model.x_dimension, model.y_dimension))
     for x_val in 1:model.x_dimension
@@ -341,7 +342,6 @@ function heatmap(model::AntWorld)
             elseif model.pheremone_trails[x_val, y_val] > model.pheremone_floor
                 heatmap[x_val, y_val] = model.pheremone_trails[x_val, y_val] ≥ model.pheremone_floor ? clamp(model.pheremone_trails[x_val, y_val], model.pheremone_floor, model.pheremone_ceiling) : 0
             else
-                # Set the value of the heatmap to NaN so it displays as white
                 heatmap[x_val, y_val] = NaN
             end
         end
