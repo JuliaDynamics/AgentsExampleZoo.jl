@@ -151,8 +151,6 @@ function initalize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70), 
         end
     end
 
-    @debug "Nest Locations: \n $(nest_locations[100, 100]), $(nest_locations[100, 101])"
-
     properties = AntWorldProperties(
         pheremone_trails,
         food_amounts,
@@ -366,12 +364,11 @@ plotkwargs = (
 
 # Running the model. 
 # There are two options, to explore or to simply get a video of the run. 
-exploration = true
 video = false
 with_logger(debuglogger) do
     model = initalize_model(;number_ants = 125, random_seed = 6666, pheremone_amount = 60, evaporation_rate = 5)
-    if exploration
-        GLMakie.activate!()
+    if !video    
+        GLMakie.activate!(inline = false)
         params = Dict(
             :evaporation_rate => 0:1:100,
             :diffusion_rate => 0:1:100,
@@ -387,27 +384,14 @@ with_logger(debuglogger) do
             model;
             agent_step! = ant_step!,
             model_step! = antworld_step!,
-            #params,
+            params,
             plotkwargs...,
-            #adata, alabels = ["Num Ants Collected"],
-            #mdata, mlabels = ["Total Food Collected"],
-            #enable_inspection = true
+            adata, alabels = ["Num Ants Collected"],
+            mdata, mlabels = ["Total Food Collected"]
         )
 
         display(fig)
         @info "fig: $(fig)\n ax: $(ax)\n abmobs: $(abmobs)"
-    elseif !video
-        CairoMakie.activate!()
-        @info "Starting static plotting"
-        fig, ax, abmobs = abmplot(
-            model;
-            #params,
-            plotkwargs...,
-            #adata, alabels = ["Num Ants Collected"],
-            #mdata, mlabels = ["Total Food Collected"],
-            #enable_inspection = true
-        )
-        fig
     else
         GLMakie.activate!()
         @info "Starting creating a video"
