@@ -58,7 +58,7 @@ agent_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
 # Plotting is simple enough. We just need to use the [`InteractiveDynamics.abmplot`](@ref)
 # for our runners, and display the heightmap for our reference. A better interface to do
 # this is currently a work in progress.
-using InteractiveDynamics
+
 using CairoMakie
 CairoMakie.activate!() # hide
 

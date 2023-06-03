@@ -218,7 +218,7 @@ end
 # ## Visualizing & animating
 # %% #src
 # Lets run the model with constant solar isolation and visualize the result
-using InteractiveDynamics
+
 using CairoMakie
 CairoMakie.activate!() # hide
 model = daisyworld()

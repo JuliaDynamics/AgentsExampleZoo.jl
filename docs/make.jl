@@ -38,7 +38,7 @@ using Agents
 println("Literate...")
 import Literate
 println("InteractiveDynamics...")
-using InteractiveDynamics
+
 
 # download the themes
 println("Theme-ing")

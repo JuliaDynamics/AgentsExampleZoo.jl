@@ -262,7 +262,7 @@ end
 # and standard Makie.jl commands like lifting the model observable.
 # (we could plot the sugar distribution as a heatmap, but we choose this composite
 # plot for more variaty in the example pool)
-using InteractiveDynamics
+
 
 model = sugarscape()
 fig, ax, abmp = abmplot(model;

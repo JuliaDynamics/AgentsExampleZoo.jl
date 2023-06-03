@@ -46,7 +46,7 @@
 
 using Agents
 using Random
-using InteractiveDynamics
+
 using CairoMakie
 CairoMakie.activate!() # hide
 

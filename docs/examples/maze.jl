@@ -52,7 +52,7 @@ agent_step!(agent, model) = move_along_route!(agent, model, pathfinder)
 
 # ## Visualization
 # Visualizing the `Walker` move through the maze is handled through [`InteractiveDynamics.abmplot`](@ref).
-using InteractiveDynamics
+
 using CairoMakie
 CairoMakie.activate!() # hide
 

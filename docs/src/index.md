@@ -1,8 +1,12 @@
-![Agents.jl](https://github.com/JuliaDynamics/JuliaDynamics/blob/master/videos/agents/agents3_logo.gif?raw=true)
+```@docs
+Agents
+```
 
 !!! note "This is an examples-only repository!"
     Please notice that this repository holds _only examples_ of various models implemented in Agents.jl. To actually learn how to use Agents.jl please visit the [online documentation](https://juliadynamics.github.io/Agents.jl/stable/) first!
 
+
+## Versions
 
 The examples here were built with versions
 
@@ -13,7 +17,7 @@ Pkg.status(["Agents", "InteractiveDynamics", "CairoMakie"];
 )
 ```
 
-# Overview of Examples
+## Overview of Examples
 
 Our ever growing list of examples are designed to showcase what is possible with
 Agents.jl. Here, we outline a number of topics that new and advanced users alike can

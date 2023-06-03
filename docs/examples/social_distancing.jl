@@ -80,7 +80,7 @@ model2 = ball_model()
 
 # And then make an animation
 
-using InteractiveDynamics
+
 using CairoMakie
 CairoMakie.activate!() # hide
 

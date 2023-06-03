@@ -159,7 +159,7 @@ end
 # the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
 model = initialize_model()
 
-using InteractiveDynamics
+
 import CairoMakie
 CairoMakie.activate!() # hide
 
@@ -195,7 +195,7 @@ abmvideo(
 # dynamically. This makes use of the [`InteractiveDynamics.abm_data_exploration`](@ref) function.
 
 # ```julia
-# using InteractiveDynamics
+#
 # using GLMakie # This plotting backend allows for interactivity
 # model = initialize_model()
 # ```

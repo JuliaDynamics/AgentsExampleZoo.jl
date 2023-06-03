@@ -169,7 +169,7 @@ nothing # hide
 # Here we once again use the huge flexibility provided by [`plotabm`](@ref) to
 # plot the bacteria cells. We define a function that creates a custom `Shape` based
 # on the agent:
-using InteractiveDynamics
+
 using CairoMakie # choose plotting backend
 CairoMakie.activate!() # hide
 
@@ -189,7 +189,7 @@ function cassini_oval(agent)
 
     bacteria = R * permutedims([x y])
     coords = [Point2f(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
-    scale(Polygon(coords), 0.5)
+    scale(Makie.Polygon(coords), 0.5)
 end
 nothing # hide
 
