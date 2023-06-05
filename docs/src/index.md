@@ -30,6 +30,7 @@ That is why the main example of Agents.jl documentation is the Schelling model o
 of what is possible on a grid. If you're looking for something simpler, then the
 [Forest fire](@ref) would be a good start, which is also an example of a cellular automaton.
 [Daisyworld](@ref) is a famous ABM example which has both agent and model dynamics, similarly with [Sugarscape](@ref).
+[Ants](@ref) is based on an ABM model from NetLogo that shows the behavior of colonies. 
 
 ## Continuous spaces
 In this space, agents generally move with a given velocity
