@@ -22,25 +22,25 @@
 using Agents, LinearAlgebra
 using Random # hide
 
-# We use the [`@agent`](@ref) macro to conveniently define a `Particle` agent. Each agent
+# We use the [`@agent`](@ref) macro to conveniently define a `FractalParticle` agent. Each agent
 # has a radius, representing the particle size, a boolean to define whether it is stuck and part of the fractal,
 # and an axis around which it spins (elaborated on later). In addition, since we use the [`ContinuousAgent`](@ref)
 # type, the [`@agent`](@ref) macro also provides each agent with fields for `id`, `pos` (its position in space) and
 # `vel` (its velocity).
-@agent Particle ContinuousAgent{2} begin
+@agent FractalParticle ContinuousAgent{2} begin
     radius::Float64
     is_stuck::Bool
     spin_axis::Array{Float64,1}
 end
 
 # A custom constructor allows convenient creation of agents.
-Particle(
+FractalParticle(
     id::Int,
     radius::Float64,
     spin_clockwise::Bool;
     pos = (0.0, 0.0),
     is_stuck = false,
-) = Particle(id, pos, (0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
+) = FractalParticle(id, pos, (0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
 
 # We also define a few utility functions for ease of implementation.
 # `rand_circle` returns a random point on the unit circle. `particle_radius`
@@ -51,9 +51,9 @@ rand_circle(rng) = (θ = rand(rng, 0.0:0.1:359.9); (cos(θ), sin(θ)))
 particle_radius(min_radius::Float64, max_radius::Float64, rng) =
     min_radius <= max_radius ? rand(rng, min_radius:0.01:max_radius) : min_radius
 
-# The `initialize_model` function returns a new model containing particles placed
+# The `initialize_fractal` function returns a new model containing particles placed
 # randomly in the given space and one seed particle at the center.
-function initialize_model(;
+function initialize_fractal(;
     initial_particles::Int = 100, # initial particles in the model, not including the seed
     ## size of the space in which particles exist
     space_extents::NTuple{2,Float64} = (150.0, 150.0),
@@ -78,11 +78,11 @@ function initialize_model(;
         :spawn_count => 0,
     )
     ## space is periodic to allow particles going off one edge to wrap around to the opposite
-    space = ContinuousSpace(space_extents, 1.0; periodic = true)
-    model = ABM(Particle, space; properties, rng = Random.MersenneTwister(seed))
+    space = ContinuousSpace(space_extents; periodic = true)
+    model = ABM(FractalParticle, space; properties, rng = Random.MersenneTwister(seed))
     center = space_extents ./ 2.0
     for i in 1:initial_particles
-        particle = Particle(
+        particle = FractalParticle(
             i,
             particle_radius(min_radius, max_radius, model.rng),
             rand(model.rng) < clockwise_fraction,
@@ -91,7 +91,7 @@ function initialize_model(;
         add_agent!(particle, model)
     end
     ## create the seed particle
-    particle = Particle(
+    particle = FractalParticle(
         initial_particles + 1,
         particle_radius(min_radius, max_radius, model.rng),
         true;
@@ -104,7 +104,7 @@ function initialize_model(;
     return model
 end
 
-# The `agent_step!` function simulates particle motion for those who are not yet `stuck`.
+# The `fractal_particle_step!` function simulates particle motion for those who are not yet `stuck`.
 # For each particle, we first perform a crude distance check to all other particles.
 # If the current particle intersects any particle in the fractal, it also becomes
 # part of the fractal and is not simulated further. Agent velocity has a radial component that
@@ -114,7 +114,7 @@ end
 # move slower. The `speed` parameter is implemented as the time difference between successive
 # steps of the simulation. A larger value causes particles to move more per step, but leads to
 # inaccuracies as particles do not move through the intervening space.
-function agent_step!(agent::Particle, model)
+function fractal_particle_step!(agent::FractalParticle, model)
     agent.is_stuck && return
 
     for id in nearby_ids(agent.pos, model, agent.radius)
@@ -138,11 +138,11 @@ function agent_step!(agent::Particle, model)
     move_agent!(agent, model, model.speed)
 end
 
-# The `model_step!` function serves the sole purpose of spawning additional particles
+# The `fractal_step!` function serves the sole purpose of spawning additional particles
 # as they get stuck to the growing fractal.
-function model_step!(model)
+function fractal_step!(model)
     while model.spawn_count > 0
-        particle = Particle(
+        particle = FractalParticle(
             nextid(model),
             particle_radius(model.min_radius, model.max_radius, model.rng),
             rand(model.rng) < model.clockwise_fraction;
@@ -157,24 +157,24 @@ end
 
 # We run the model using the `InteractiveDynamics` package with `GLMakie` backend so
 # the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
-model = initialize_model()
+model = initialize_fractal()
 
 
 import CairoMakie
 CairoMakie.activate!() # hide
 
 # Particles that are stuck and part of the fractal are shown in red, for visual distinction
-particle_color(a::Particle) = a.is_stuck ? :red : :blue
+particle_color(a::FractalParticle) = a.is_stuck ? :red : :blue
 # The visual size of particles corresponds to their radius, and has been calculated
-# for the default value of `space_extents` of the `initialize_model` function. It will
+# for the default value of `space_extents` of the `initialize_fractal` function. It will
 # not look accurate on other values.
-particle_size(a::Particle) = 7.5 * a.radius
+particle_size(a::FractalParticle) = 7.5 * a.radius
 
 abmvideo(
     "fractal.mp4",
     model,
-    agent_step!,
-    model_step!;
+    fractal_particle_step!,
+    fractal_step!;
     ac = particle_color,
     as = particle_size,
     am = '●',
@@ -197,7 +197,7 @@ abmvideo(
 # ```julia
 #
 # using GLMakie # This plotting backend allows for interactivity
-# model = initialize_model()
+# model = initialize_fractal()
 # ```
 
 # `params` defines the range in which different parameter values can be adjusted through
@@ -213,11 +213,11 @@ abmvideo(
 #     :max_radius => 0.5:0.01:3.0,
 # )
 #
-# particle_size(a::Particle) = 4 * a.radius
+# particle_size(a::FractalParticle) = 4 * a.radius
 # abm_data_exploration(
 #     model,
-#     agent_step!,
-#     model_step!,
+#     fractal_particle_step!,
+#     fractal_step!,
 #     params;
 #     ac = particle_color,
 #     as = particle_size,

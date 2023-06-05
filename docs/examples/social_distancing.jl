@@ -56,7 +56,7 @@ model = ball_model()
 
 # The agent step function for now is trivial. It is just [`move_agent!`](@ref) in
 # continuous space
-agent_step!(agent, model) = move_agent!(agent, model, model.dt)
+ball_step!(agent, model) = move_agent!(agent, model, model.dt)
 
 # `dt` is our time resolution, but we will talk about this more later!
 
@@ -87,7 +87,7 @@ CairoMakie.activate!() # hide
 abmvideo(
     "socialdist2.mp4",
     model2,
-    agent_step!,
+    ball_step!,
     model_step!;
     title = "Billiard-like",
     frames = 50,
@@ -133,7 +133,7 @@ end
 abmvideo(
     "socialdist3.mp4",
     model3,
-    agent_step!,
+    ball_step!,
     model_step!;
     title = "Billiard-like with stationary agents",
     frames = 50,
@@ -170,8 +170,7 @@ end
 
 const steps_per_day = 24
 
-using DrWatson: @dict
-function sir_initiation(;
+function socialdistancing_init(;
     infection_period = 30 * steps_per_day,
     detection_time = 14 * steps_per_day,
     reinfection_probability = 0.05,
@@ -223,7 +222,7 @@ end
 # the infected infected and green for the recovered, leveraging
 # [`InteractiveDynamics.abmplot`](@ref).
 
-sir_model = sir_initiation()
+sir_model = socialdistancing_init()
 
 sir_colors(a) = a.status == :S ? "#2b2b33" : a.status == :I ? "#bf2642" : "#338c54"
 
@@ -260,7 +259,7 @@ end
 # as the billiard-ball dynamics. We only have them the same here for convenience,
 # but in a real model they will probably differ.
 
-# We also modify the `agent_step!` function, so that we keep track of how long the
+# We also modify the `ball_step!` function, so that we keep track of how long the
 # agent has been infected, and whether they have to die or not.
 
 function sir_agent_step!(agent, model)
@@ -284,7 +283,7 @@ end
 
 # Alright, now we can animate this process for default parameters
 
-sir_model = sir_initiation()
+sir_model = socialdistancing_init()
 
 abmvideo(
     "socialdist4.mp4",
@@ -318,9 +317,9 @@ adata = [(:status, infected), (:status, recovered)]
 # Let's do the following runs, with different parameters probabilities
 r1, r2 = 0.04, 0.33
 β1, β2 = 0.5, 0.1
-sir_model1 = sir_initiation(reinfection_probability = r1, βmin = β1)
-sir_model2 = sir_initiation(reinfection_probability = r2, βmin = β1)
-sir_model3 = sir_initiation(reinfection_probability = r1, βmin = β2)
+sir_model1 = socialdistancing_init(reinfection_probability = r1, βmin = β1)
+sir_model2 = socialdistancing_init(reinfection_probability = r2, βmin = β1)
+sir_model3 = socialdistancing_init(reinfection_probability = r1, βmin = β2)
 
 data1, _ = run!(sir_model1, sir_agent_step!, sir_model_step!, 2000; adata)
 data2, _ = run!(sir_model2, sir_agent_step!, sir_model_step!, 2000; adata)
@@ -352,7 +351,7 @@ figure
 # The best way to model social distancing is to make some agents simply not move
 # (which feels like it approximates reality better).
 
-sir_model = sir_initiation(isolated = 0.8)
+sir_model = socialdistancing_init(isolated = 0.8)
 abmvideo(
     "socialdist5.mp4",
     sir_model,
@@ -379,7 +378,7 @@ abmvideo(
 # but science is even cooler.
 
 r4 = 0.04
-sir_model4 = sir_initiation(reinfection_probability = r4, βmin = β1, isolated = 0.8)
+sir_model4 = socialdistancing_init(reinfection_probability = r4, βmin = β1, isolated = 0.8)
 
 data4, _ = run!(sir_model4, sir_agent_step!, sir_model_step!, 2000; adata)
 
