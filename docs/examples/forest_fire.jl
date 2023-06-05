@@ -28,18 +28,16 @@ using Agents, Random
 using CairoMakie
 CairoMakie.activate!() # hide
 
-@agent Automata GridAgent{2} begin end
-
-# The agent type `Automata` is effectively a dummy agent, for which we will invoke
-# [`dummystep`](@ref) when stepping the model.
-
+# We do not need to define any new agent types, as we won't be using
+# any agents. We still have to provide an agent to the `ABM` construction,
+# but we can just use the existing `GridAgent{2}`.
 # We then make a setup function that initializes the model.
 function forest_fire(; density = 0.7, griddims = (100, 100), seed = 2)
     space = GridSpaceSingle(griddims; periodic = false, metric = :manhattan)
     rng = Random.MersenneTwister(seed)
     ## The `trees` field is coded such that
     ## Empty = 0, Green = 1, Burning = 2, Burnt = 3
-    forest = ABM(Automata, space; rng, properties = (trees = zeros(Int, griddims),))
+    forest = ABM(GridAgent{2}, space; rng, properties = (trees = zeros(Int, griddims),))
     for I in CartesianIndices(forest.trees)
         if rand(forest.rng) < density
             ## Set the trees at the left edge on fire
@@ -53,7 +51,7 @@ forest = forest_fire()
 
 # ## Defining the step!
 
-function tree_step!(forest)
+function forest_step!(forest)
     ## Find trees that are burning (coded as 2)
     for I in findall(isequal(2), forest.trees)
         for idx in nearby_positions(I.I, forest)
@@ -69,12 +67,12 @@ end
 
 # ## Running the model
 
-Agents.step!(forest, dummystep, tree_step!, 1)
+Agents.step!(forest, dummystep, forest_step!, 1)
 count(t == 3 for t in forest.trees) # Number of burnt trees on step 1
 
 #
 
-Agents.step!(forest, dummystep, tree_step!, 10)
+Agents.step!(forest, dummystep, forest_step!, 10)
 count(t == 3 for t in forest.trees) # Number of burnt trees on step 11
 
 # Now we can do some data collection as well using an aggregate function `percentage`:
@@ -83,13 +81,13 @@ forest = forest_fire(griddims = (20, 20))
 burnt_percentage(f) = count(t == 3 for t in f.trees) / prod(size(f.trees))
 mdata = [burnt_percentage]
 
-_, data = run!(forest, dummystep, tree_step!, 10; mdata)
+_, data = run!(forest, dummystep, forest_step!, 10; mdata)
 data
 
 # Now let's plot the model. We use green for unburnt trees, red for burning and a
 # dark red for burnt.
 forest = forest_fire()
-Agents.step!(forest, dummystep, tree_step!, 1)
+Agents.step!(forest, dummystep, forest_step!, 1)
 
 plotkwargs = (
     add_colorbar = false,
@@ -108,7 +106,7 @@ abmvideo(
     "forest.mp4",
     forest,
     dummystep,
-    tree_step!;
+    forest_step!;
     as = 0,
     framerate = 5,
     frames = 20,

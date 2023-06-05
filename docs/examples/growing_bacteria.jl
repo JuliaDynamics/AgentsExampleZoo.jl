@@ -64,7 +64,7 @@ nothing # hide
 
 # ## Stepping functions
 
-function model_step!(model)
+function bacteria_model_step!(model)
     for a in allagents(model)
         if a.growthprog ≥ 1
             ## When a cell has matured, it divides into two daughter cells on the
@@ -94,7 +94,7 @@ nothing # hide
 # Notice that the first derivatives of all degrees of freedom is directly
 # proportional to the force applied to them. This overdamped approximation is
 # valid for small length scales, where viscous forces dominate over inertia.
-function agent_step!(agent::SimpleCell, model::ABM)
+function bacterium_step!(agent::SimpleCell, model::ABM)
     fsym, compression, torque = transform_forces(agent)
     direction =  model.dt * model.mobility .* fsym
     walk!(agent, direction, model)
@@ -144,7 +144,7 @@ nothing # hide
 
 # Okay, we can now initialize a model and see what it does.
 
-space = ContinuousSpace((14, 9), 1.0; periodic = false)
+space = ContinuousSpace((14, 9); spacing = 1.0, periodic = false)
 model = ABM(
     SimpleCell,
     space,
@@ -189,7 +189,7 @@ function cassini_oval(agent)
 
     bacteria = R * permutedims([x y])
     coords = [Point2f(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
-    scale(Makie.Polygon(coords), 0.5)
+    scale_polygon(Makie.Polygon(coords), 0.5)
 end
 nothing # hide
 
@@ -199,9 +199,9 @@ nothing # hide
 
 # and proceed with the animation
 abmvideo(
-    "bacteria.mp4", model, agent_step!, model_step!;
+    "bacteria.mp4", model, bacterium_step!, bacteria_model_step!;
     am = cassini_oval, ac = bacteria_color,
-    spf = 50, framerate = 30, frames = 100,
+    spf = 80, framerate = 40, frames = 100,
     title = "Growing bacteria"
 )
 

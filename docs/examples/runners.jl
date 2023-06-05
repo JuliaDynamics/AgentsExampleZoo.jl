@@ -20,7 +20,7 @@ using FileIO # To load images you also need ImageMagick available to your projec
 # Our agent, as you can see, is very simple. Just an `id` and `pos`ition provided by
 # [`@agent`](@ref). The rest of the dynamics of this example will be provided by the model.
 
-function initialize(map_url; goal = (128, 409), seed = 88)
+function initialize_runners(map_url; goal = (128, 409), seed = 88)
     ## Load an image file and convert it do a simple representation of height
     heightmap = floor.(Int, convert.(Float64, load(download(map_url))) * 255)
     ## The space of the model can be obtained directly from the image.
@@ -51,10 +51,9 @@ end
 # With the pathfinder in place, and all our runners having a goal position set, stepping
 # is now trivial.
 
-agent_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
+runner_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
 
 # ## Let's Race
-# %% #src
 # Plotting is simple enough. We just need to use the [`InteractiveDynamics.abmplot`](@ref)
 # for our runners, and display the heightmap for our reference. A better interface to do
 # this is currently a work in progress.
@@ -66,15 +65,15 @@ CairoMakie.activate!() # hide
 map_url =
     "https://raw.githubusercontent.com/JuliaDynamics/" *
     "JuliaDynamics/master/videos/agents/runners_heightmap.jpg"
-model = initialize(map_url)
+runners_model = initialize_runners(map_url)
 
 # and plot
-static_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
+runners_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
 
 abmvideo(
     "runners.mp4",
-    model,
-    agent_step!;
+    runners_model,
+    runner_step!;
     figurekwargs = (resolution = (700, 700),),
     frames = 200,
     framerate = 45,
@@ -83,7 +82,7 @@ abmvideo(
     scatterkwargs = (strokecolor = :white, strokewidth = 2),
     heatarray = model -> penaltymap(model.pathfinder),
     heatkwargs = (colormap = :terrain,),
-    static_preplot!
+    static_preplot! = runners_preplot!,
 )
 
 # ```@raw html
