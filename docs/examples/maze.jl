@@ -29,7 +29,7 @@ function initalize_model(map_url)
     ## `diagonal_movement` is set to false to prevent cutting corners by going along
     ## diagonals.
     pathfinder = AStar(space; walkmap=maze, diagonal_movement=false)
-    model = ABM(Walker, space; agent_step!)
+    model = StandardABM(Walker, space; agent_step!)
     ## Place a walker at the start of the maze
     add_agent!((1, 4), model)
     ## The walker's movement target is the end of the maze.

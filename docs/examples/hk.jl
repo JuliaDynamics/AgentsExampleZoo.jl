@@ -49,8 +49,8 @@ end
 # We could, alternatively, make the three opinions a single field with vector value.
 
 function hk_model(; numagents = 100, ϵ = 0.2)
-    model = ABM(HKAgent; agent_step!, model_step!, rng = MersenneTwister(42),
-                scheduler = Schedulers.fastest, properties = Dict(:ϵ => ϵ))
+    model = StandardABM(HKAgent; agent_step!, model_step!, rng = MersenneTwister(42),
+                        scheduler = Schedulers.fastest, properties = Dict(:ϵ => ϵ))
     for i in 1:numagents
         o = rand(abmrng(model))
         add_agent!(model, o, o, -1)

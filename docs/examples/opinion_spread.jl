@@ -47,13 +47,9 @@ function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, 
         rng = MersenneTwister(seed),
     )
     for pos in positions(model)
-        add_agent!(
-            pos,
-            model,
-            false,
-            sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false),
-            sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
-        )
+        opinion = sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
+        prev_opinion = sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
+        add_agent!(pos, model, false, opinion, prev_opinion)
     end
     return model
 end

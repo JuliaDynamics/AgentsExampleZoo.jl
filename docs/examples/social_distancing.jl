@@ -38,8 +38,8 @@ end
 # Let's also initialize a trivial model with continuous space
 function ball_model(; speed = 0.002)
     space2d = ContinuousSpace((1, 1); spacing = 0.02)
-    model = ABM(SocialAgent, space2d; agent_step!
-                properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
+    model = StandardABM(SocialAgent, space2d; agent_step!, properties = Dict(:dt => 1.0), 
+                        rng = MersenneTwister(42))
     ## And add some agents to the model
     for ind in 1:500
         pos = Tuple(rand(abmrng(model), 2))
