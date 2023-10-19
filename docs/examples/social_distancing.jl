@@ -42,8 +42,8 @@ function ball_model(; speed = 0.002)
                 properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
     ## And add some agents to the model
     for ind in 1:500
-        pos = Tuple(rand(model.rng, 2))
-        vel = sincos(2π * rand(model.rng)) .* speed
+        pos = Tuple(rand(abmrng(model), 2))
+        vel = sincos(2π * rand(abmrng(model))) .* speed
         add_agent!(pos, model, vel, 1.0)
     end
     return model
@@ -194,15 +194,15 @@ function sir_initiation(;
 
     ## Add initial individuals
     for ind in 1:N
-        pos = Tuple(rand(model.rng, 2))
+        pos = Tuple(rand(abmrng(model), 2))
         status = ind ≤ N - initial_infected ? :S : :I
         isisolated = ind ≤ isolated * N
         mass = isisolated ? Inf : 1.0
-        vel = isisolated ? (0.0, 0.0) : sincos(2π * rand(model.rng)) .* speed
+        vel = isisolated ? (0.0, 0.0) : sincos(2π * rand(abmrng(model))) .* speed
 
         ## very high transmission probability
         ## we are modelling close encounters after all
-        β = (βmax - βmin) * rand(model.rng) + βmin
+        β = (βmax - βmin) * rand(abmrng(model)) + βmin
         add_agent!(pos, model, vel, mass, 0, status, β)
     end
 
@@ -219,10 +219,10 @@ function transmit!(a1, a2, rp)
     count(a.status == :I for a in (a1, a2)) ≠ 1 && return
     infected, healthy = a1.status == :I ? (a1, a2) : (a2, a1)
 
-    rand(model.rng) > infected.β && return
+    rand(abmrng(model)) > infected.β && return
 
     if healthy.status == :R
-        rand(model.rng) > rp && return
+        rand(abmrng(model)) > rp && return
     end
     healthy.status = :I
 end
@@ -252,7 +252,7 @@ update!(agent) = agent.status == :I && (agent.days_infected += 1)
 
 function recover_or_die!(agent, model)
     if agent.days_infected ≥ model.infection_period
-        if rand(model.rng) ≤ model.death_rate
+        if rand(abmrng(model)) ≤ model.death_rate
             kill_agent!(agent, model)
         else
             agent.status = :R

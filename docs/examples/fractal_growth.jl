@@ -85,8 +85,8 @@ function initialize_model(;
     for i in 1:initial_particles
         particle = Particle(
             i,
-            particle_radius(min_radius, max_radius, model.rng),
-            rand(model.rng) < clockwise_fraction,
+            particle_radius(min_radius, max_radius, abmrng(model)),
+            rand(abmrng(model)) < clockwise_fraction,
         )
         ## `add_agent!` automatically gives the particle a random position in the space
         add_agent!(particle, model)
@@ -94,7 +94,7 @@ function initialize_model(;
     ## create the seed particle
     particle = Particle(
         initial_particles + 1,
-        particle_radius(min_radius, max_radius, model.rng),
+        particle_radius(min_radius, max_radius, abmrng(model)),
         true;
         pos = center,
         is_stuck = true,
@@ -127,14 +127,14 @@ function agent_step!(agent::Particle, model)
         end
     end
     ## radial vector towards the center of the space
-    radial = model.space.extent ./ 2.0 .- agent.pos
+    radial = abmspace(model).extent ./ 2.0 .- agent.pos
     radial = radial ./ norm(radial)
     ## tangential vector in the direction of orbit of the particle
     tangent = Tuple(cross([radial..., 0.0], agent.spin_axis)[1:2])
     agent.vel =
         (
             radial .* model.attraction .+ tangent .* model.spin .+
-            rand_circle(model.rng) .* model.vibration
+            rand_circle(abmrng(model)) .* model.vibration
         ) ./ (agent.radius^2.0)
     move_agent!(agent, model, model.speed)
 end
@@ -145,9 +145,9 @@ function model_step!(model)
     while model.spawn_count > 0
         particle = Particle(
             nextid(model),
-            particle_radius(model.min_radius, model.max_radius, model.rng),
-            rand(model.rng) < model.clockwise_fraction;
-            pos = (rand_circle(model.rng) .+ 1.0) .* model.space.extent .* 0.49,
+            particle_radius(model.min_radius, model.max_radius, abmrng(model)),
+            rand(abmrng(model)) < model.clockwise_fraction;
+            pos = (rand_circle(abmrng(model)) .+ 1.0) .* abmspace(model).extent .* 0.49,
         )
         add_agent_pos!(particle, model)
         model.spawn_count -= 1

@@ -52,7 +52,7 @@ function build_model(rules::Tuple;
                 rng = MersenneTwister(seed))
     ## Turn some of the cells on
     for pos in positions(model)
-        if rand(model.rng) < alive_probability
+        if rand(abmrng(model)) < alive_probability
             status[pos...] = true
         end
     end

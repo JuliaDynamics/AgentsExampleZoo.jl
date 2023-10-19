@@ -51,8 +51,8 @@ function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, 
             pos,
             model,
             false,
-            sample(model.rng, 1:levels_per_opinion, nopinions, replace = false),
-            sample(model.rng, 1:levels_per_opinion, nopinions, replace = false)
+            sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false),
+            sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
         )
     end
     return model
@@ -72,14 +72,14 @@ function update_prev_opinion!(agent, model)
 end
 
 function adopt!(agent, model)
-    neighbor = sample(model.rng, collect(nearby_ids(agent, model))) # Randomly select a neighbor.
+    neighbor = sample(abmrng(model), collect(nearby_ids(agent, model))) # Randomly select a neighbor.
     neighbor_opinions = model[neighbor].opinion # Look up neighbor's opinions.
     agent_opinions = agent.opinion # Look up agent's opinions.
     nmatches = length(intersect(neighbor_opinions, agent_opinions)) # Count how many opinions the neighbor and agent have in common.
 
-    if nmatches < model.nopinions && rand(model.rng) < nmatches / model.nopinions
-        neighbor_opinion = sample(model.rng, setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and randomly pick one for the agent to adopt.
-        agent_opinion = sample(model.rng, setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and randomly pick one to change.
+    if nmatches < model.nopinions && rand(abmrng(model)) < nmatches / model.nopinions
+        neighbor_opinion = sample(abmrng(model), setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and randomly pick one for the agent to adopt.
+        agent_opinion = sample(abmrng(model), setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and randomly pick one to change.
         replace!(agent.opinion, agent_opinion => neighbor_opinion) # Replace agent's opinion with neighbor's opinion.
     end
 end

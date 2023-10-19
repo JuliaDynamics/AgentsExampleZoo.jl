@@ -118,20 +118,20 @@ end
 function battle!(one::Fighter, two::Fighter, model)
     if level(one) == level(two)
         ## Odds are equivalent
-        one_winner = rand(model.rng) < 0.5
+        one_winner = rand(abmrng(model)) < 0.5
     elseif level(one) > level(two)
         ## Odds are in favor of one
-        one_winner = 2 * rand(model.rng) > rand(model.rng)
+        one_winner = 2 * rand(abmrng(model)) > rand(abmrng(model))
     else
         ## Odds are in favor of two
-        one_winner = rand(model.rng) > 2 * rand(model.rng)
+        one_winner = rand(abmrng(model)) > 2 * rand(abmrng(model))
     end
 
     one_winner ? (up = one; down = two) : (up = two; down = one)
 
     new_lvl_up = min(level(up) + 1, 10)
     new_pos_up =
-        clamp.(rand(model.rng, -1:1, 2) .+ loc(up), [1, 1], size(model.space)[1:2])
+        clamp.(rand(abmrng(model), -1:1, 2) .+ loc(up), [1, 1], size(abmspace(model))[1:2])
     move_agent!(up, (new_pos_up..., new_lvl_up), model)
     new_lvl_down = level(down) - 1
     if new_lvl_down == 0
@@ -166,7 +166,7 @@ function captor_behavior!(agent, model)
         ## Someone is here to kill the captor. Could be more than one opponent
         prisoner = [model[id] for id in close_ids if model[id].capture_time > 0][1]
         exploiter = rand(
-            model.rng,
+            abmrng(model),
             [
                 model[id]
                 for
@@ -176,13 +176,13 @@ function captor_behavior!(agent, model)
         )
         exploiter.shape = :rect
         gain = ceil(Int, level(agent) / 2)
-        new_lvl = min(level(agent) + rand(model.rng, 1:gain), 10)
+        new_lvl = min(level(agent) + rand(abmrng(model), 1:gain), 10)
         kill_agent!(agent, model)
         move_agent!(exploiter, (loc(exploiter)..., new_lvl), model)
         ## Prisoner runs away in the commotion
         prisoner.shape = :utriangle
         prisoner.capture_time = 0
-        walk!(prisoner, (rand(model.rng, -1:1, 2)..., 0), model)
+        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model)
     end
 end
 
@@ -213,13 +213,13 @@ end
 function showdown!(one::Fighter, two::Fighter, model)
     if level(one) == level(two)
         ## Odds are equivalent
-        one_winner = rand(model.rng) < 0.5
+        one_winner = rand(abmrng(model)) < 0.5
     elseif level(one) > level(two)
         ## Odds are in favor of one
-        one_winner = level(one) - level(two) * rand(model.rng) > rand(model.rng)
+        one_winner = level(one) - level(two) * rand(abmrng(model)) > rand(abmrng(model))
     else
         ## Odds are in favor of two
-        one_winner = rand(model.rng) > level(two) - level(one) * rand(model.rng)
+        one_winner = rand(abmrng(model)) > level(two) - level(one) * rand(abmrng(model))
     end
 
     one_winner ? kill_agent!(two, model) : kill_agent!(one, model)
@@ -339,7 +339,7 @@ markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
 fig = Figure(resolution = (500, 600))
 ax = Axis(fig[1,1]; title = "Battle Royale")
 scatter!(ax, pos; color = colors, marker = markers, markersize = 25)
-e = size(model.space)[1:2] .+ 2
+e = size(abmspace(model))[1:2] .+ 2
 o = zero.(e) .- 2
 xlims!(ax, o[1], e[1])
 ylims!(ax, o[2], e[2])

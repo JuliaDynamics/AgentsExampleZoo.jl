@@ -24,9 +24,7 @@
 # Cellular automata don't necessarily require an agent-like structure. Here we will
 # demonstrate how a model focused solution is possible.
 using Agents, Random
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 @agent struct Automata(GridAgent{2}) end
 

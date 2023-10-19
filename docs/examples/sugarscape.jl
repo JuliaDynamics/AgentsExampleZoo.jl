@@ -178,11 +178,11 @@ function sugarscape(;
     for _ in 1:N
         add_agent_single!(
             model,
-            rand(model.rng, vision_dist[1]:vision_dist[2]),
-            rand(model.rng, metabolic_rate_dist[1]:metabolic_rate_dist[2]),
+            rand(abmrng(model), vision_dist[1]:vision_dist[2]),
+            rand(abmrng(model), metabolic_rate_dist[1]:metabolic_rate_dist[2]),
             0,
-            rand(model.rng, max_age_dist[1]:max_age_dist[2]),
-            rand(model.rng, w0_dist[1]:w0_dist[2]),
+            rand(abmrng(model), max_age_dist[1]:max_age_dist[2]),
+            rand(abmrng(model), w0_dist[1]:w0_dist[2]),
         )
     end
     return model
@@ -238,11 +238,11 @@ function replacement!(agent, model)
         ## Whenever an agent dies, a young one is added to a random empty position
         add_agent_single!(
             model,
-            rand(model.rng, model.vision_dist[1]:model.vision_dist[2]),
-            rand(model.rng, model.metabolic_rate_dist[1]:model.metabolic_rate_dist[2]),
+            rand(abmrng(model), model.vision_dist[1]:model.vision_dist[2]),
+            rand(abmrng(model), model.metabolic_rate_dist[1]:model.metabolic_rate_dist[2]),
             0,
-            rand(model.rng, model.max_age_dist[1]:model.max_age_dist[2]),
-            rand(model.rng, model.w0_dist[1]:model.w0_dist[2]),
+            rand(abmrng(model), model.max_age_dist[1]:model.max_age_dist[2]),
+            rand(abmrng(model), model.w0_dist[1]:model.w0_dist[2]),
         )
     end
 end

@@ -38,7 +38,7 @@ function initialize(map_url; goal = (128, 409), seed = 88)
     )
     for _ in 1:10
         ## Place runners in the low-lying space in the map.
-        runner = add_agent!((rand(model.rng, 100:350), rand(model.rng, 50:200)), model)
+        runner = add_agent!((rand(abmrng(model), 100:350), rand(abmrng(model), 50:200)), model)
         ## Everyone wants to get to the same place.
         plan_route!(runner, goal, model.pathfinder)
     end

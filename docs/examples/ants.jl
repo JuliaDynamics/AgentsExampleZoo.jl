@@ -225,7 +225,7 @@ turn_around(agent) = agent.facing_direction = mod1(agent.facing_direction + numb
 # Introduces the ability for some randomness in the ants behavior. Even when following a trail,
 # this will cause ants to randomly face somewhere in a 45 degree direction of what is ideal for them. 
 function wiggle(agent::Ant, model::AntWorld)
-    direction = rand(model.rng, [0, rand(model.rng, [-1, 1])])
+    direction = rand(abmrng(model), [0, rand(abmrng(model), [-1, 1])])
     agent.facing_direction = mod1(agent.facing_direction + direction, number_directions)
 end
 

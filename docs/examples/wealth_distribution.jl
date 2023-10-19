@@ -104,10 +104,10 @@ function agent_step_2d!(agent, model)
     agent.wealth == 0 && return # do nothing
     neighboring_positions = collect(nearby_positions(agent.pos, model))
     push!(neighboring_positions, agent.pos) # also consider current position
-    rpos = rand(model.rng, neighboring_positions) # the position that we will exchange with
+    rpos = rand(abmrng(model), neighboring_positions) # the position that we will exchange with
     available_ids = ids_in_position(rpos, model)
     if length(available_ids) > 0
-        random_neighbor_agent = model[rand(model.rng, available_ids)]
+        random_neighbor_agent = model[rand(abmrng(model), available_ids)]
         agent.wealth -= 1
         random_neighbor_agent.wealth += 1
     end
@@ -126,7 +126,7 @@ data[(end-20):end, :]
 # That is actually straightforward:
 
 function wealth_distr(data, model, n)
-    W = zeros(Int, size(model.space))
+    W = zeros(Int, size(abmspace(model)))
     for row in eachrow(filter(r -> r.step == n, data)) # iterate over rows at a specific step
         W[row.pos...] += row.wealth
     end
