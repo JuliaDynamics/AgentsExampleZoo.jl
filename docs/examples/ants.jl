@@ -182,8 +182,7 @@ function initialize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70),
     )
 
     for n in 1:number_ants
-        agent = Ant(n, (x_center, y_center), false, rand(abmrng(model), range(1, 8)), 0, false)
-        add_agent_pos!(agent, model)
+        add_agent!((x_center, y_center), model, false, rand(abmrng(model), 1:8), 0, false)
     end
     @info "Finished the model initialization"
     return model

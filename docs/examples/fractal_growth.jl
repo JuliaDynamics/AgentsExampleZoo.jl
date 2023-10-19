@@ -33,14 +33,8 @@ using Random # hide
     spin_axis::Array{Float64,1}
 end
 
-# A custom constructor allows convenient creation of agents.
-Particle(
-    id::Int,
-    radius::Float64,
-    spin_clockwise::Bool;
-    pos = (0.0, 0.0),
-    is_stuck = false,
-) = Particle(id, pos, (0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
+propParticle(radius::Float64, spin_clockwise::Bool; is_stuck = false,) = 
+    ((0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
 
 # We also define a few utility functions for ease of implementation.
 # `rand_circle` returns a random point on the unit circle. `particle_radius`
@@ -83,25 +77,17 @@ function initialize_model(;
                 rng = MersenneTwister(seed))
     center = space_extents ./ 2.0
     for i in 1:initial_particles
-        particle = Particle(
-            i,
-            particle_radius(min_radius, max_radius, abmrng(model)),
-            rand(abmrng(model)) < clockwise_fraction,
-        )
+        radius = particle_radius(min_radius, max_radius, abmrng(model))
+        props = propParticle(radius, rand(abmrng(model)) < clockwise_fraction)
         ## `add_agent!` automatically gives the particle a random position in the space
-        add_agent!(particle, model)
+        add_agent!(model, radius, props...)
     end
     ## create the seed particle
-    particle = Particle(
-        initial_particles + 1,
-        particle_radius(min_radius, max_radius, abmrng(model)),
-        true;
-        pos = center,
-        is_stuck = true,
-    )
+    radius = particle_radius(min_radius, max_radius, abmrng(model))
+    props_seed_particle = propParticle(radius, true; is_stuck = true)
     ## `add_agent_pos!` will use the position of the agent passed in, instead of assigning it
     ## to a random value
-    add_agent_pos!(particle, model)
+    add_agent!(center, model, props_seed_particle...)
     return model
 end
 
@@ -143,13 +129,10 @@ end
 # as they get stuck to the growing fractal.
 function model_step!(model)
     while model.spawn_count > 0
-        particle = Particle(
-            nextid(model),
-            particle_radius(model.min_radius, model.max_radius, abmrng(model)),
-            rand(abmrng(model)) < model.clockwise_fraction;
-            pos = (rand_circle(abmrng(model)) .+ 1.0) .* abmspace(model).extent .* 0.49,
-        )
-        add_agent_pos!(particle, model)
+        radius = particle_radius(model.min_radius, model.max_radius, abmrng(model))
+        props = propParticle(radius, rand(abmrng(model)) < model.clockwise_fraction)
+        pos = (rand_circle(abmrng(model)) .+ 1.0) .* abmspace(model).extent .* 0.49
+        add_agent!(pos, model, props...)
         model.spawn_count -= 1
     end
 end

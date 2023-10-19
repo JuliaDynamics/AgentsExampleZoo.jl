@@ -31,10 +31,9 @@ function initalize_model(map_url)
     pathfinder = AStar(space; walkmap=maze, diagonal_movement=false)
     model = ABM(Walker, space; agent_step!)
     ## Place a walker at the start of the maze
-    walker = Walker(1, (1, 4))
-    add_agent_pos!(walker, model)
+    add_agent!((1, 4), model)
     ## The walker's movement target is the end of the maze.
-    plan_route!(walker, (41, 32), pathfinder)
+    plan_route!(model[1], (41, 32), pathfinder)
 
     return model, pathfinder
 end
