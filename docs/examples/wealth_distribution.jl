@@ -16,11 +16,9 @@
 
 # ## Core structures: space-less
 # We start by defining the Agent type and initializing the model.
-using Agents
-using Random
+using Agents, Random
 
-mutable struct WealthAgent <: AbstractAgent
-    id::Int
+@agent struct WealthAgent(NoSpaceAgent)
     wealth::Int
 end
 
@@ -29,14 +27,13 @@ end
 # We can also make a very simple [`AgentBasedModel`](@ref) for our model.
 
 function wealth_model(; numagents = 100, initwealth = 1, seed = 5)
-    model = ABM(WealthAgent; scheduler = Schedulers.randomly, rng = Random.Xoshiro(seed))
+    model = ABM(WealthAgent; agent_step!, scheduler = Schedulers.Randomly(), 
+                rng = Xoshiro(seed))
     for _ in 1:numagents
         add_agent!(model, initwealth)
     end
     return model
 end
-
-model = wealth_model()
 
 # The next step is to define the agent step function
 function agent_step!(agent, model)
@@ -45,6 +42,8 @@ function agent_step!(agent, model)
     agent.wealth -= 1
     ragent.wealth += 1
 end
+
+model = wealth_model()
 
 # We use `random_agent` as a convenient way to just grab a second agent.
 # (this may return the same agent as `agent`, but we don't care in the long run)
@@ -55,7 +54,7 @@ N = 5
 M = 2000
 adata = [:wealth]
 model = wealth_model(numagents = M)
-data, _ = run!(model, agent_step!, N; adata)
+data, _ = run!(model, N; adata)
 data[(end-20):end, :]
 
 # What we mostly care about is the distribution of wealth,
@@ -67,7 +66,6 @@ wealths = filter(x -> x.step == N - 1, data)[!, :wealth]
 # With a simple visualization we immediately see the power-law distribution:
 
 using CairoMakie
-CairoMakie.activate!() # hide
 hist(
     wealths;
     bins = collect(0:9),
@@ -84,22 +82,19 @@ hist(
 
 # We therefore have to add a `pos` field as the second field of the agents:
 
-mutable struct WealthInSpace <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Int}
+@agent struct WealthInSpace(GridAgent{2})
     wealth::Int
 end
 
 function wealth_model_2D(; dims = (25, 25), wealth = 1, M = 1000)
     space = GridSpace(dims, periodic = true)
-    model = ABM(WealthInSpace, space; scheduler = Schedulers.randomly)
+    model = ABM(WealthInSpace, space; agent_step! = agent_step_2d!, 
+                scheduler = Schedulers.Randomly())
     for _ in 1:M # add agents in random positions
         add_agent!(model, wealth)
     end
     return model
 end
-
-model2D = wealth_model_2D()
 
 # The agent actions are a just a bit more complicated in this example.
 # Now the agents can only give wealth to agents that exist on the same or
@@ -118,11 +113,13 @@ function agent_step_2d!(agent, model)
     end
 end
 
+model2D = wealth_model_2D()
+
 # ## Running the model with space
 init_wealth = 4
 model = wealth_model_2D(; wealth = init_wealth)
 adata = [:wealth, :pos]
-data, _ = run!(model, agent_step_2d!, 10; adata = adata, when = [1, 5, 9])
+data, _ = run!(model, 10; adata = adata, when = [1, 5, 9])
 data[(end-20):end, :]
 
 # Okay, now we want to get the 2D spatial wealth distribution of the model.

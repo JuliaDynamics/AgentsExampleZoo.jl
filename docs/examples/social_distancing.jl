@@ -28,7 +28,7 @@
 
 using Agents, Random
 
-@agent SocialAgent ContinuousAgent{2} begin
+@agent struct SocialAgent(ContinuousAgent{2, Float64})
     mass::Float64
 end
 
@@ -38,8 +38,8 @@ end
 # Let's also initialize a trivial model with continuous space
 function ball_model(; speed = 0.002)
     space2d = ContinuousSpace((1, 1); spacing = 0.02)
-    model = ABM(SocialAgent, space2d, properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
-
+    model = ABM(SocialAgent, space2d; agent_step!
+                properties = Dict(:dt => 1.0), rng = MersenneTwister(42))
     ## And add some agents to the model
     for ind in 1:500
         pos = Tuple(rand(model.rng, 2))
@@ -48,8 +48,6 @@ function ball_model(; speed = 0.002)
     end
     return model
 end
-
-model = ball_model()
 
 # We took advantage of the functionality of [`add_agent!`](@ref) that creates the
 # agents automatically. For now all agents have the same absolute `speed`, and `mass`.
@@ -76,19 +74,15 @@ function model_step!(model)
     end
 end
 
-model2 = ball_model()
+model = ball_model()
 
 # And then make an animation
 
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 abmvideo(
     "socialdist2.mp4",
-    model2,
-    agent_step!,
-    model_step!;
+    model;
     title = "Billiard-like",
     frames = 50,
     spf = 2,
@@ -121,10 +115,10 @@ abmvideo(
 # very easy to do with the [`elastic_collision!`](@ref) function, we only have to make
 # some agents have infinite mass
 
-model3 = ball_model()
+model2 = ball_model()
 
 for id in 1:400
-    agent = model3[id]
+    agent = model2[id]
     agent.mass = Inf
     agent.vel = (0.0, 0.0)
 end
@@ -132,9 +126,7 @@ end
 # let's animate this again
 abmvideo(
     "socialdist3.mp4",
-    model3,
-    agent_step!,
-    model_step!;
+    model2;
     title = "Billiard-like with stationary agents",
     frames = 50,
     spf = 2,
@@ -152,7 +144,7 @@ abmvideo(
 # (see previous example).
 # They can be infected with a disease and transfer the disease to other agents around them.
 
-@agent PoorSoul ContinuousAgent{2} begin
+@agent struct PoorSoul(ContinuousAgent{2, Float64}
     mass::Float64
     days_infected::Int  # number of days since is infected
     status::Symbol  # :S, :I or :R
@@ -196,7 +188,9 @@ function sir_initiation(;
         dt,
     )
     space = ContinuousSpace((1,1); spacing = 0.02)
-    model = ABM(PoorSoul, space, properties = properties, rng = MersenneTwister(seed))
+    model = StandardABM(PoorSoul, space, agent_step! = sir_agent_step!,
+                        model_step! = sir_model_step!, properties = properties,
+                        rng = MersenneTwister(seed))
 
     ## Add initial individuals
     for ind in 1:N
@@ -214,21 +208,6 @@ function sir_initiation(;
 
     return model
 end
-
-# Notice the constant `steps_per_day`, which approximates how many model steps
-# correspond to one day (since the parameters we used in the previous graph SIR example
-# were given in days).
-
-# To visualize this model, we will use black color for the susceptible, red for
-# the infected infected and green for the recovered, leveraging
-# [`InteractiveDynamics.abmplot`](@ref).
-
-sir_model = sir_initiation()
-
-sir_colors(a) = a.status == :S ? "#2b2b33" : a.status == :I ? "#bf2642" : "#338c54"
-
-fig, ax, abmp = abmplot(sir_model; ac = sir_colors)
-fig # display figure
 
 # We have increased the size of the model 10-fold (for more realistic further analysis)
 
@@ -282,15 +261,28 @@ function recover_or_die!(agent, model)
     end
 end
 
+# Notice the constant `steps_per_day`, which approximates how many model steps
+# correspond to one day (since the parameters we used in the previous graph SIR example
+# were given in days).
+
+# To visualize this model, we will use black color for the susceptible, red for
+# the infected infected and green for the recovered, leveraging
+# [`InteractiveDynamics.abmplot`](@ref).
+
+sir_model = sir_initiation()
+
+sir_colors(a) = a.status == :S ? "#2b2b33" : a.status == :I ? "#bf2642" : "#338c54"
+
+fig, ax, abmp = abmplot(sir_model; ac = sir_colors)
+fig # display figure
+
 # Alright, now we can animate this process for default parameters
 
 sir_model = sir_initiation()
 
 abmvideo(
     "socialdist4.mp4",
-    sir_model,
-    sir_agent_step!,
-    sir_model_step!;
+    sir_model;
     title = "SIR model",
     frames = 50,
     ac = sir_colors,
@@ -322,15 +314,15 @@ sir_model1 = sir_initiation(reinfection_probability = r1, βmin = β1)
 sir_model2 = sir_initiation(reinfection_probability = r2, βmin = β1)
 sir_model3 = sir_initiation(reinfection_probability = r1, βmin = β2)
 
-data1, _ = run!(sir_model1, sir_agent_step!, sir_model_step!, 2000; adata)
-data2, _ = run!(sir_model2, sir_agent_step!, sir_model_step!, 2000; adata)
-data3, _ = run!(sir_model3, sir_agent_step!, sir_model_step!, 2000; adata)
+data1, _ = run!(sir_model1, 2000; adata)
+data2, _ = run!(sir_model2, 2000; adata)
+data3, _ = run!(sir_model3, 2000; adata)
 
 data1[(end-10):end, :]
 
 # Now, we can plot the number of infected versus time
 using CairoMakie
-CairoMakie.activate!() # hide
+
 figure = Figure()
 ax = figure[1, 1] = Axis(figure; ylabel = "Infected")
 l1 = lines!(ax, data1[:, dataname((:status, infected))], color = :orange)
@@ -355,9 +347,7 @@ figure
 sir_model = sir_initiation(isolated = 0.8)
 abmvideo(
     "socialdist5.mp4",
-    sir_model,
-    sir_agent_step!,
-    sir_model_step!;
+    sir_model;
     title = "Social Distancing",
     frames = 100,
     spf = 2,
@@ -381,7 +371,7 @@ abmvideo(
 r4 = 0.04
 sir_model4 = sir_initiation(reinfection_probability = r4, βmin = β1, isolated = 0.8)
 
-data4, _ = run!(sir_model4, sir_agent_step!, sir_model_step!, 2000; adata)
+data4, _ = run!(sir_model4, 2000; adata)
 
 l4 = lines!(ax, data4[:, dataname((:status, infected))], color = :red)
 figure[1, 2][2,1] = Legend(

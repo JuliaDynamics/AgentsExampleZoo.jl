@@ -12,7 +12,7 @@ using Agents, Agents.Pathfinding
 using FileIO # To load images you also need ImageMagick available to your project
 
 # The `Walker` agent needs no special property, just the `id` and `position` from [`@agent`](@ref).
-@agent Walker GridAgent{2} begin end
+@agent struct Walker(GridAgent{2}) end
 
 # The maze is stored as a simple .bmp image, where each pixel corresponds to a position on the grid.
 # White pixels correspond to walkable regions of the maze.
@@ -29,7 +29,7 @@ function initalize_model(map_url)
     ## `diagonal_movement` is set to false to prevent cutting corners by going along
     ## diagonals.
     pathfinder = AStar(space; walkmap=maze, diagonal_movement=false)
-    model = ABM(Walker, space)
+    model = ABM(Walker, space; agent_step!)
     ## Place a walker at the start of the maze
     walker = Walker(1, (1, 4))
     add_agent_pos!(walker, model)
@@ -52,15 +52,12 @@ agent_step!(agent, model) = move_along_route!(agent, model, pathfinder)
 
 # ## Visualization
 # Visualizing the `Walker` move through the maze is handled through [`InteractiveDynamics.abmplot`](@ref).
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 # The `heatarray` keyword argument allows plotting the maze as a heatmap behind the agent.
 abmvideo(
     "maze.mp4",
-    model,
-    agent_step!;
+    model;
     figurekwargs = (resolution=(700,700),),
     frames=60,
     framerate=30,
@@ -69,7 +66,6 @@ abmvideo(
     heatarray = _ -> pathfinder.walkmap,
     add_colorbar = false,
 )
-nothing # hide
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

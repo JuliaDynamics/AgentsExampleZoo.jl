@@ -22,16 +22,13 @@
 # It is also available from the `Models` module as [`Models.growing_bacteria`](@ref).
 
 using Agents, LinearAlgebra
-using Random # hide
+using Random
 
-mutable struct SimpleCell <: AbstractAgent
-    id::Int
-    pos::NTuple{2,Float64}
+@agent struct SimpleCell(ContinuousAgent{2, Float64})
     length::Float64
     orientation::Float64
     growthprog::Float64
     growthrate::Float64
-
     ## node positions/forces
     p1::NTuple{2,Float64}
     p2::NTuple{2,Float64}
@@ -55,12 +52,10 @@ function update_nodes!(a::SimpleCell)
     a.p1 = a.pos .+ offset
     a.p2 = a.pos .- offset
 end
-nothing # hide
 
 # Some geometry convenience functions
 unitvector(φ) = reverse(sincos(φ))
 cross2D(a, b) = a[1] * b[2] - a[2] * b[1]
-nothing # hide
 
 # ## Stepping functions
 
@@ -87,7 +82,6 @@ function model_step!(model)
         interact!(a1, a2, model)
     end
 end
-nothing # hide
 
 # Here we use a custom [`move_agent!`](@ref) function,
 # because the agents have several moving parts.
@@ -104,7 +98,6 @@ function agent_step!(agent::SimpleCell, model::ABM)
     update_nodes!(agent)
     return agent.pos
 end
-nothing # hide
 
 # ### Helper functions
 function interact!(a1::SimpleCell, a2::SimpleCell, model)
@@ -138,40 +131,32 @@ function transform_forces(agent::SimpleCell)
     torque = 0.5 * cross2D(uv, fasym)
     return fsym, compression, torque
 end
-nothing # hide
 
 # ## Animating bacterial growth
 
 # Okay, we can now initialize a model and see what it does.
 
 space = ContinuousSpace((14, 9), 1.0; periodic = false)
-model = ABM(
-    SimpleCell,
-    space,
-    properties = Dict(:dt => 0.005, :hardness => 1e2, :mobility => 1.0),
-    rng = MersenneTwister(1680)
-)
+model = ABM(SimpleCell, space; agent_step!, model_step!,
+            properties = Dict(:dt => 0.005, :hardness => 1e2, :mobility => 1.0),
+            rng = MersenneTwister(1680))
 
 # Let's start with just two agents.
 
 add_agent!((6.5, 4.0), model, 0.0, 0.3, 0.0, 0.1)
 add_agent!((7.5, 4.0), model, 0.0, 0.0, 0.0, 0.1)
-nothing # hide
 
 # The model has several parameters, and some of them are of interest.
 # We could e.g. define
 
 adata = [:pos, :length, :orientation, :growthprog, :p1, :p2, :f1, :f2]
-nothing # hide
 
 # and then [`run!`](@ref) the model. But we'll animate the model directly.
 
 # Here we once again use the huge flexibility provided by [`plotabm`](@ref) to
 # plot the bacteria cells. We define a function that creates a custom `Shape` based
 # on the agent:
-using InteractiveDynamics
 using CairoMakie # choose plotting backend
-CairoMakie.activate!() # hide
 
 function cassini_oval(agent)
     t = LinRange(0, 2π, 50)
@@ -191,15 +176,13 @@ function cassini_oval(agent)
     coords = [Point2f(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
     scale(Polygon(coords), 0.5)
 end
-nothing # hide
 
 # set up some nice colors
 bacteria_color(b) = RGBf(b.id * 3.14 % 1, 0.2, 0.2)
-nothing # hide
 
 # and proceed with the animation
 abmvideo(
-    "bacteria.mp4", model, agent_step!, model_step!;
+    "bacteria.mp4", model;
     am = cassini_oval, ac = bacteria_color,
     spf = 50, framerate = 30, frames = 100,
     title = "Growing bacteria"

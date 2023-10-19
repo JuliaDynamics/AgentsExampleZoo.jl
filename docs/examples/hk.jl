@@ -30,11 +30,10 @@
 # ## Core structures
 # We start by defining the Agent type and initializing the model.
 # The Agent type has two fields so that we can implement the synchronous update.
-using Agents
+using Agents, Random
 using Statistics: mean
 
-mutable struct HKAgent <: AbstractAgent
-    id::Int
+@agent struct HKAgent(NoSpaceAgent)
     old_opinion::Float64
     new_opinion::Float64
     previous_opinion::Float64
@@ -50,15 +49,14 @@ end
 # We could, alternatively, make the three opinions a single field with vector value.
 
 function hk_model(; numagents = 100, ϵ = 0.2)
-    model = ABM(HKAgent, scheduler = Schedulers.fastest, properties = Dict(:ϵ => ϵ))
+    model = ABM(HKAgent; agent_step!, model_step!, rng = MersenneTwister(42),
+                scheduler = Schedulers.fastest, properties = Dict(:ϵ => ϵ))
     for i in 1:numagents
         o = rand(model.rng)
         add_agent!(model, o, o, -1)
     end
     return model
 end
-
-model = hk_model()
 
 # Add some helper functions for the update rule. As there is a filter in
 # the rule we implement it outside the `agent_step!` method. Notice that the filter
@@ -69,14 +67,12 @@ function boundfilter(agent, model)
         [a.old_opinion for a in allagents(model)],
     )
 end
-nothing # hide
 
 # Now we implement the `agent_step!`
 function agent_step!(agent, model)
     agent.previous_opinion = agent.old_opinion
     agent.new_opinion = mean(boundfilter(agent, model))
 end
-nothing # hide
 
 # and `model_step!`
 function model_step!(model)
@@ -84,7 +80,6 @@ function model_step!(model)
         a.old_opinion = a.new_opinion
     end
 end
-nothing # hide
 
 # From this implementation we see that to implement synchronous scheduling
 # we define an Agent type with `old` and `new` fields for attributes that
@@ -111,14 +106,16 @@ function terminate(model, s)
     end
 end
 
-Agents.step!(model, agent_step!, model_step!, terminate)
+model = hk_model()
+
+step!(model, terminate)
 model[1]
 
 # Alright, let's wrap everything in a function and do some data collection using [`run!`](@ref).
 
 function model_run(; kwargs...)
     model = hk_model(; kwargs...)
-    agent_data, _ = run!(model, agent_step!, model_step!, terminate; adata = [:new_opinion])
+    agent_data, _ = run!(model, terminate; adata = [:new_opinion])
     return agent_data
 end
 
@@ -130,21 +127,12 @@ data[(end-19):end, :]
 # function for the `when` argument:
 
 model = hk_model()
-agent_data, _ = run!(
-    model,
-    agent_step!,
-    model_step!,
-    terminate;
-    adata = [:new_opinion],
-    when = terminate,
-)
+agent_data, _ = run!(model, terminate; adata = [:new_opinion],
+                     when = terminate)
 agent_data
 
 # Finally we run three scenarios, collect the data and plot it.
 using DataFrames, CairoMakie
-CairoMakie.activate!() # hide
-using Random # hide
-Random.seed!(42) # hide
 
 const cmap = cgrad(:lightrainbow)
 plotsim(ax, data) =

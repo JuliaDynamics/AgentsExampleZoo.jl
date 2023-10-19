@@ -15,7 +15,7 @@ using Agents, Agents.Pathfinding
 using Random
 using FileIO # To load images you also need ImageMagick available to your project
 
-@agent Runner GridAgent{2} begin end
+@agent struct Runner(GridAgent{2}) end
 
 # Our agent, as you can see, is very simple. Just an `id` and `pos`ition provided by
 # [`@agent`](@ref). The rest of the dynamics of this example will be provided by the model.
@@ -29,9 +29,10 @@ function initialize(map_url; goal = (128, 409), seed = 88)
     ## The pathfinder. We use the `MaxDistance` metric since we want the runners
     ## to look for the easiest path to run, not just the most direct.
     pathfinder = AStar(space; cost_metric = PenaltyMap(heightmap, MaxDistance{2}()))
-    model = ABM(
+    model = StandardABM(
         Runner,
         space;
+        agent_step!
         rng = MersenneTwister(seed),
         properties = Dict(:goal => goal, :pathfinder => pathfinder)
     )
@@ -58,9 +59,7 @@ agent_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
 # Plotting is simple enough. We just need to use the [`InteractiveDynamics.abmplot`](@ref)
 # for our runners, and display the heightmap for our reference. A better interface to do
 # this is currently a work in progress.
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 # We load the sample heightmap
 map_url =
@@ -73,8 +72,7 @@ static_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker
 
 abmvideo(
     "runners.mp4",
-    model,
-    agent_step!;
+    model;
     figurekwargs = (resolution = (700, 700),),
     frames = 200,
     framerate = 45,

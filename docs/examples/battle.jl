@@ -46,11 +46,9 @@
 
 using Agents
 using Random
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
-@agent Fighter GridAgent{3} begin
+@agent struct Fighter(GridAgent{3})
     has_prisoner::Bool
     capture_time::Int
     shape::Symbol # shape of the fighter conveys what action they are currently doing
@@ -67,13 +65,14 @@ function battle(; fighters = 50, seed = 6547)
     model = ABM(
         Fighter,
         GridSpace((100, 100, 10); periodic = false);
+        agent_step!
         scheduler = Schedulers.randomly,
         rng = Random.Xoshiro(seed),
     )
 
     n = 0
     while n != fighters
-        pos = (rand(model.rng, 1:100, 2)..., 1) # Start at level 1
+        pos = (rand(abmrng(model), 1:100, 2)..., 1) # Start at level 1
         if isempty(pos, model)
             add_agent!(pos, model, false, 0, :diamond)
             n += 1
@@ -82,8 +81,6 @@ function battle(; fighters = 50, seed = 6547)
 
     return model
 end
-
-model = battle()
 
 # 50 opponents positioned randomly on a 100x100 grid, with no escape
 # (`periodic = false`). To leverage categorical dimensions fully, non-periodic chebyshev
@@ -320,12 +317,14 @@ function agent_step!(agent, model)
     return
 end
 
+model = battle()
+
 # ## Let the Battle Begin
 # We need to write entirely custom plotting here, because we have a 3D space
 # (that would normally be plotted as 3D), but we actually only want to plot the first
 # two dimensions of the space. Thankfully, the infastructure of `ABMObservable` makes this
 # straightforward.
-abmobs = ABMObservable(model; agent_step!)
+abmobs = ABMObservable(model)
 modelobs = abmobs.model
 
 # First, we make the positions, colors and markers observables for the agents
@@ -380,7 +379,7 @@ fig
 # Alright, a simple call to the `record` function can make a video of the process:
 record(fig, "battle.mp4", 1:200; framerate = 10) do i
     ax.title = "Battle Royale, step = $(i)"
-    Agents.step!(abmobs, 1)
+    step!(abmobs, 1)
 end
 
 # ```@raw html

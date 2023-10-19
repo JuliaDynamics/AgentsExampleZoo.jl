@@ -27,7 +27,7 @@ using Random # hide
 # and an axis around which it spins (elaborated on later). In addition, since we use the [`ContinuousAgent`](@ref)
 # type, the [`@agent`](@ref) macro also provides each agent with fields for `id`, `pos` (its position in space) and
 # `vel` (its velocity).
-@agent Particle ContinuousAgent{2} begin
+@agent struct Particle(ContinuousAgent{2, Float64})
     radius::Float64
     is_stuck::Bool
     spin_axis::Array{Float64,1}
@@ -79,7 +79,8 @@ function initialize_model(;
     )
     ## space is periodic to allow particles going off one edge to wrap around to the opposite
     space = ContinuousSpace(space_extents, 1.0; periodic = true)
-    model = ABM(Particle, space; properties, rng = Random.MersenneTwister(seed))
+    model = ABM(Particle, space; properties, agent_step!, model_step!,
+                rng = MersenneTwister(seed))
     center = space_extents ./ 2.0
     for i in 1:initial_particles
         particle = Particle(
@@ -159,9 +160,7 @@ end
 # the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
 model = initialize_model()
 
-using InteractiveDynamics
-import CairoMakie
-CairoMakie.activate!() # hide
+using CairoMakie
 
 # Particles that are stuck and part of the fractal are shown in red, for visual distinction
 particle_color(a::Particle) = a.is_stuck ? :red : :blue
@@ -172,9 +171,7 @@ particle_size(a::Particle) = 7.5 * a.radius
 
 abmvideo(
     "fractal.mp4",
-    model,
-    agent_step!,
-    model_step!;
+    model;
     ac = particle_color,
     as = particle_size,
     am = '●',
@@ -216,8 +213,6 @@ abmvideo(
 # particle_size(a::Particle) = 4 * a.radius
 # abm_data_exploration(
 #     model,
-#     agent_step!,
-#     model_step!,
 #     params;
 #     ac = particle_color,
 #     as = particle_size,

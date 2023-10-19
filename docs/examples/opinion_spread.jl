@@ -23,17 +23,13 @@
 # and hence this example follows this approach.
 
 using Agents
-using InteractiveDynamics # plotting agents
 using CairoMakie # for static plotting
-CairoMakie.activate!() # hide
 using Random
 using StatsBase
 
 # ## Model creation
 
-mutable struct Citizen <: AbstractAgent
-    id::Int
-    pos::NTuple{2, Int}
+@agent struct Citizen(GridAgent{2})
     stabilized::Bool
     opinion::Array{Int,1}
     prev_opinion::Array{Int,1}
@@ -42,12 +38,13 @@ end
 function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, seed = 648)
     space = GridSpace(dims)
     properties = Dict(:nopinions => nopinions)
-    model = AgentBasedModel(
+    model = StandardABM(
         Citizen,
-        space,
+        space;
+        agent_step!
         scheduler = Schedulers.randomly,
         properties = properties,
-        rng = Random.MersenneTwister(seed),
+        rng = MersenneTwister(seed),
     )
     for pos in positions(model)
         add_agent!(
@@ -105,7 +102,7 @@ rununtil(model, s) = count(a -> a.stabilized, allagents(model)) == length(positi
 
 model = create_model(nopinions = 3, levels_per_opinion = 4)
 
-agentdata, _ = run!(model, agent_step!, dummystep, rununtil, adata = [(:stabilized, count)])
+agentdata, _ = run!(model, rununtil, adata = [(:stabilized, count)])
 
 # ## Plotting
 
@@ -132,8 +129,7 @@ model = create_model(nopinions = 3, levels_per_opinion = 4)
 
 abmvideo(
     "opinion.mp4",
-    model,
-    agent_step!;
+    model;
     ac = ac,
     am = '■',
     as = 20,

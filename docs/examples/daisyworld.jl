@@ -44,7 +44,7 @@ using Agents
 using Random
 import StatsBase
 
-@agent Daisy GridAgent{2} begin
+@agent struct Daisy(GridAgent{2})
     breed::Symbol
     age::Int
     albedo::Float64 # 0-1 fraction
@@ -178,7 +178,8 @@ function daisyworld(;
         tick = 0, ratio = 0.5, temperature = zeros(griddims)
     )
     properties = Dict(k=>v for (k,v) in pairs(properties))
-    model = ABM(Daisy, space; properties, rng)
+    model = ABM(Daisy, space; properties, rng, 
+                agent_step! = daisy_step!, model_step! = daisyworld_step!)
 
     ## Populate with daisies: each position has only one daisy (black or white)
     grid = collect(positions(model))
@@ -209,9 +210,8 @@ end
 # ## Visualizing & animating
 # %% #src
 # Lets run the model with constant solar isolation and visualize the result
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
+
 model = daisyworld()
 
 # To visualize we need to define the necessary functions for [`abmplot`](@ref).
@@ -233,7 +233,7 @@ fig, _ = abmplot(model; plotkwargs...)
 fig
 
 # And after a couple of steps
-Agents.step!(model, daisy_step!, daisyworld_step!, 5)
+step!(model, 5)
 fig, _ = abmplot(model; heatarray = model.temperature, plotkwargs...)
 fig
 
@@ -241,9 +241,7 @@ fig
 model = daisyworld()
 abmvideo(
     "daisyworld.mp4",
-    model,
-    daisy_step!,
-    daisyworld_step!;
+    model;
     title = "Daisy World",
     frames = 60,
     plotkwargs...,
@@ -267,7 +265,7 @@ adata = [(black, count), (white, count)]
 
 model = daisyworld(; solar_luminosity = 1.0)
 
-agent_df, model_df = run!(model, daisy_step!, daisyworld_step!, 1000; adata)
+agent_df, model_df = run!(model, 1000; adata)
 figure = Figure(resolution = (600, 400))
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
 blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
@@ -287,8 +285,7 @@ mdata = [temperature, :solar_luminosity]
 
 # And we run (and plot) everything
 model = daisyworld(solar_luminosity = 1.0, scenario = :ramp)
-agent_df, model_df =
-    run!(model, daisy_step!, daisyworld_step!, 1000; adata = adata, mdata = mdata)
+agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
 
 figure = CairoMakie.Figure(resolution = (600, 600))
 ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")

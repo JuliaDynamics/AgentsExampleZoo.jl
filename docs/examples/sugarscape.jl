@@ -107,7 +107,7 @@
 
 using Agents, Random
 
-@agent SugarSeeker GridAgent{2} begin
+@agent struct SugarSeeker(GridAgent{2})
     vision::Int
     metabolic_rate::Int
     age::Int
@@ -166,9 +166,11 @@ function sugarscape(;
         :sugar_values => sugar_values,
         :sugar_capacities => sugar_capacities,
     )
-    model = AgentBasedModel(
+    model = StandardABM(
         SugarSeeker,
-        space,
+        space;
+        agent_step!,
+        model_step!,
         scheduler = Schedulers.randomly,
         properties = properties,
         rng = MersenneTwister(seed)
@@ -185,17 +187,6 @@ function sugarscape(;
     end
     return model
 end
-
-model = sugarscape()
-
-# Let's plot the spatial distribution of sugar capacities in the Sugarscape.
-using CairoMakie
-CairoMakie.activate!() # hide
-
-fig = Figure(resolution = (600, 600))
-ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
-Colorbar(fig[1, 2], hm, width = 20)
-fig
 
 # ## Defining stepping functions
 # Now we define the stepping functions that handle the time evolution of the model.
@@ -256,6 +247,16 @@ function replacement!(agent, model)
     end
 end
 
+model = sugarscape()
+
+# Let's plot the spatial distribution of sugar capacities in the Sugarscape.
+using CairoMakie
+
+fig = Figure(resolution = (600, 600))
+ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
+Colorbar(fig[1, 2], hm, width = 20)
+fig
+
 # ## Plotting & Animating
 
 # We can plot the ABM and the sugar distribution side by side using [`abmplot`](@ref)
@@ -265,10 +266,7 @@ end
 using InteractiveDynamics
 
 model = sugarscape()
-fig, ax, abmp = abmplot(model;
-    agent_step!, model_step!, add_controls = false,
-    figkwargs = (resolution = (800, 600))
-)
+fig, ax, abmp = abmplot(model; add_controls = false, figkwargs = (resolution = (800, 600)))
 ## Lift model observable for heatmap
 sugar = @lift($(abmp.model).sugar_values)
 axhm, hm = heatmap(fig[1,2], sugar; colormap=:thermal, colorrange=(0,4))
@@ -305,7 +303,7 @@ end
 # ## Distribution of wealth across individuals
 # First we produce some data that include the wealth
 model2 = sugarscape()
-adata, _ = run!(model2, agent_step!, model_step!, 100, adata = [:wealth])
+adata, _ = run!(model2, 100, adata = [:wealth])
 adata[1:10,:]
 
 # And now we animate the evolution of the distribution of wealth

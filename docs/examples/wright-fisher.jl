@@ -16,16 +16,20 @@
 
 using Agents
 numagents = 100
-nothing # hide
 
 # Let's define an agent. The genetic value of an agent is a number (`trait` field).
-mutable struct Haploid <: AbstractAgent
-    id::Int
+@agent struct Haploid(NoSpaceAgent)
     trait::Float64
 end
 
+# The model can be run for many generations and we can collect the average trait
+# value of the population. To do this we will use a model-step function (see [`step!`](@ref))
+# that utilizes [`sample!`](@ref):
+
+modelstep_neutral!(model::ABM) = sample!(model, nagents(model))
+
 # And make a model without any spatial structure:
-model = ABM(Haploid)
+model = StandardABM(Haploid; model_step! = modelstep_neutral!)
 
 # Create `n` random individuals:
 for i in 1:numagents
@@ -36,20 +40,12 @@ end
 # random individuals with replacement from the current individuals and updates
 # the model. For example:
 sample!(model, nagents(model))
-nothing # hide
-
-# The model can be run for many generations and we can collect the average trait
-# value of the population. To do this we will use a model-step function (see [`step!`](@ref))
-# that utilizes [`sample!`](@ref):
-
-modelstep_neutral!(model::ABM) = sample!(model, nagents(model))
-nothing # hide
 
 # We can now run the model and collect data. We use `dummystep` for the agent-step
 # function (as the agents perform no actions).
 using Statistics: mean
 
-data, _ = run!(model, dummystep, modelstep_neutral!, 20; adata = [(:trait, mean)])
+data, _ = run!(model, 20; adata = [(:trait, mean)])
 data
 
 # As expected, the average value of the "trait" remains around 0.5.
@@ -66,7 +62,7 @@ end
 
 modelstep_selection!(model::ABM) = sample!(model, nagents(model), :trait)
 
-data, _ = run!(model, dummystep, modelstep_selection!, 20; adata = [(:trait, mean)])
+data, _ = run!(model, 20; adata = [(:trait, mean)])
 data
 
 # Here we see that as time progresses, the trait becomes closer and closer to 1,

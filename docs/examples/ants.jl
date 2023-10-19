@@ -46,7 +46,7 @@ using Agents
 using Random
 using Logging
 
-@agent Ant GridAgent{2} begin
+@agent struct Ant(GridAgent{2})
     has_food::Bool
     facing_direction::Int
     food_collected::Int
@@ -176,11 +176,13 @@ function initialize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70),
         GridSpace(dimensions, periodic = false); 
         properties,
         rng, 
+        agent_step! = ant_step!,
+        model_step! = antworld_step!,
         scheduler = Schedulers.Randomly()
     )
 
     for n in 1:number_ants
-        agent = Ant(n, (x_center, y_center), false, rand(model.rng, range(1, 8)), 0, false)
+        agent = Ant(n, (x_center, y_center), false, rand(abmrng(model), range(1, 8)), 0, false)
         add_agent_pos!(agent, model)
     end
     @info "Finished the model initialization"
@@ -383,8 +385,6 @@ with_logger(debuglogger) do
         @info "Starting exploration"
         fig, ax, abmobs = abmplot(
             model;
-            agent_step! = ant_step!,
-            model_step! = antworld_step!,
             params,
             plotkwargs...,
             adata, alabels = ["Num Ants Collected"],
@@ -398,9 +398,7 @@ with_logger(debuglogger) do
         @info "Starting creating a video"
         abmvideo(
             "antworld.mp4",
-            model,
-            ant_step!,
-            antworld_step!;
+            model;
             title = "Ant World",
             frames = 1000,
             plotkwargs...,
