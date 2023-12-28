@@ -1,5 +1,12 @@
+
 module AgentsExampleZoo
+using Agents
 
-# Package is just for auto-docs generation
+include("daisyworld_def.jl")
+include("flocking.jl")
+include("schelling.jl")
+include("sir.jl")
+include("zombies.jl")
+include("rabbit_fox_hawk.jl")
 
-end # module
+end
