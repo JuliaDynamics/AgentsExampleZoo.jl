@@ -1,3 +1,5 @@
+# !!! info "This model is predefined and can be accessed with `AgentsExampleZoo.daisyworld()`"
+#
 # # Daisyworld
 # ```@raw html
 # <video width="auto" controls autoplay loop>
