@@ -1,6 +1,4 @@
 
-export schelling
-
 @agent struct SchellingAgent(GridAgent{2})
     mood::Bool # whether the agent is happy in its position. (true = happy)
     group::Int # The group of the agent,  determines mood as it interacts with neighbors

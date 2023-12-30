@@ -2,8 +2,6 @@ using Agents.Pathfinding
 using Random
 using FileIO: load
 
-export rabbit_fox_hawk
-
 @agent struct Animal(ContinuousAgent{3,Float64})
     type::Symbol # one of :rabbit, :fox or :hawk
     energy::Float64

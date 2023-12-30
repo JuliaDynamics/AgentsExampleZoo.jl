@@ -2,8 +2,6 @@ using Agents
 import StatsBase
 using Random
 
-export daisyworld
-
 @agent struct Daisy(GridAgent{2})
     breed::Symbol
     age::Int

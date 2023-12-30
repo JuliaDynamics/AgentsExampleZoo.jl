@@ -1,7 +1,5 @@
 using LinearAlgebra
 
-export flocking
-
 @agent struct Bird(ContinuousAgent{2,Float64})
     speed::Float64
     cohere_factor::Float64

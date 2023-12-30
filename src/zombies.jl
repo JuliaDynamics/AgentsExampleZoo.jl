@@ -1,7 +1,5 @@
 using Random
 
-export zombies
-
 @agent struct Zombie(OSMAgent)
     infected::Bool
     speed::Float64
