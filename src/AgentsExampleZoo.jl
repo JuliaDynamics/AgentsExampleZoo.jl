@@ -1,6 +1,8 @@
 
 module AgentsExampleZoo
-using Agents
+
+using Pkg
+Pkg.develop("Agents")
 
 include("daisyworld.jl")
 include("flocking.jl")
