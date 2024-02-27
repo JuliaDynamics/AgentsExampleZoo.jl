@@ -1,7 +1,7 @@
 name = "AgentsExampleZoo"
 uuid = "88acaeb2-2f63-4ada-bca2-2825d9da22ed"
 authors = ["Datseris <datseris.george@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
