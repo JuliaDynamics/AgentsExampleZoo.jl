@@ -2,7 +2,14 @@
 module AgentsExampleZoo
 
 using Pkg
-Pkg.develop("Agents")
+try
+    using Pkg
+    Pkg.develop(url="https://github.com/JuliaDynamics/Agents.jl.git")
+    using AgentsExampleZoo
+catch
+    Pkg.develop(path=joinpath(DEPOT_PATH[1],"dev","Agents"))
+    using AgentsExampleZoo
+end
 
 include("daisyworld.jl")
 include("flocking.jl")
