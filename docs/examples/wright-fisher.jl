@@ -54,13 +54,11 @@ data
 
 # We can sample individuals according to their trait values, supposing that their
 # fitness is correlated with their trait values.
-
-model = ABM(Haploid)
+modelstep_selection!(model::ABM) = sample!(model, nagents(model), :trait)
+model = StandardABM(Haploid; model_step! = modelstep_selection!)
 for i in 1:numagents
     add_agent!(model, rand(abmrng(model)))
 end
-
-modelstep_selection!(model::ABM) = sample!(model, nagents(model), :trait)
 
 data, _ = run!(model, 20; adata = [(:trait, mean)])
 data
