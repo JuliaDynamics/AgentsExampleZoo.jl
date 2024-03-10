@@ -7,7 +7,7 @@
 # ```
 
 # This model follows the process known as diffusion-limited aggregation to simulate the growth of fractals.
-# It is a kinetic process that consists of randomly diffusing particles giving rise to fractal-like structures
+# It is a kinetic process that consists of Randomly() diffusing particles giving rise to fractal-like structures
 # resembling those observed naturally. This examplet is based off of
 # ["Particularly Stuck" example](https://www.complexity-explorables.org/explorables/particularly-stuck/)
 # in Complexity Explorables.
@@ -46,7 +46,7 @@ particle_radius(min_radius::Float64, max_radius::Float64, rng) =
     min_radius <= max_radius ? rand(rng, min_radius:0.01:max_radius) : min_radius
 
 # The `initialize_model` function returns a new model containing particles placed
-# randomly in the given space and one seed particle at the center.
+# Randomly() in the given space and one seed particle at the center.
 function initialize_model(;
     initial_particles::Int = 100, # initial particles in the model, not including the seed
     ## size of the space in which particles exist
@@ -72,7 +72,7 @@ function initialize_model(;
         :spawn_count => 0,
     )
     ## space is periodic to allow particles going off one edge to wrap around to the opposite
-    space = ContinuousSpace(space_extents, 1.0; periodic = true)
+    space = ContinuousSpace(space_extents; spacing = 1.0, periodic = true)
     model = ABM(Particle, space; properties, agent_step!, model_step!,
                 rng = MersenneTwister(seed))
     center = space_extents ./ 2.0
@@ -80,7 +80,7 @@ function initialize_model(;
         radius = particle_radius(min_radius, max_radius, abmrng(model))
         props = propParticle(radius, rand(abmrng(model)) < clockwise_fraction)
         ## `add_agent!` automatically gives the particle a random position in the space
-        add_agent!(model, radius, props...)
+        add_agent!(model, props...)
     end
     ## create the seed particle
     radius = particle_radius(min_radius, max_radius, abmrng(model))
@@ -155,14 +155,14 @@ particle_size(a::Particle) = 7.5 * a.radius
 abmvideo(
     "fractal.mp4",
     model;
-    ac = particle_color,
-    as = particle_size,
-    am = '●',
+    agent_color = particle_color,
+    agent_size = particle_size,
+    agent_marker = '●',
     spf = 20,
     frames = 60,
     framerate = 25,
     title = "Fractal Growth",
-    scatterkwargs = (strokewidth = 0.5, strokecolor = :white),
+    agentsplotkwargs = (strokewidth = 0.5, strokecolor = :white),
 )
 
 # ```@raw html

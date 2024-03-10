@@ -48,8 +48,8 @@ function build_model(rules::Tuple;
     new_status = zeros(Bool, dims)
     ## We use a `NamedTuple` for the parameter container to avoid type instabilities
     properties = (; rules, status, new_status)
-    model = ABM(Automaton, space; properties, model_step! = game_of_life_step!,
-                rng = MersenneTwister(seed))
+    model = StandardABM(Automaton, space; properties, model_step! = game_of_life_step!,
+                rng = MersenneTwister(seed), container = Vector)
     ## Turn some of the cells on
     for pos in positions(model)
         if rand(abmrng(model)) < alive_probability
@@ -111,9 +111,7 @@ plotkwargs = (
 
 abmvideo(
     "game_of_life.mp4",
-    model,
-    dummystep,
-    game_of_life_step!;
+    model;
     title = "Game of Life",
     framerate = 10,
     frames = 60,

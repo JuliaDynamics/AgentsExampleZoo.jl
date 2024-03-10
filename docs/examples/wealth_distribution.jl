@@ -71,7 +71,7 @@ hist(
     bins = collect(0:9),
     width = 1,
     color = cgrad(:viridis)[28:28:256],
-    figure = (resolution = (600, 400),),
+    figure = (size = (600, 400),),
 )
 
 # ## Core structures: with space
@@ -134,7 +134,7 @@ function wealth_distr(data, model, n)
 end
 
 function make_heatmap(W)
-    figure = Figure(; resolution = (600, 450))
+    figure = Figure(; size = (600, 450))
     hmap_l = figure[1, 1] = Axis(figure)
     hmap = heatmap!(hmap_l, W; colormap = cgrad(:default))
     cbar = figure[1, 2] = Colorbar(figure, hmap; width = 30)

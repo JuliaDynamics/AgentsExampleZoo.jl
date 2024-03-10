@@ -260,7 +260,7 @@ adata = [(black, count), (white, count)]
 model = daisyworld(; solar_luminosity = 1.0)
 
 agent_df, model_df = run!(model, 1000; adata)
-figure = Figure(resolution = (600, 400));
+figure = Figure(size = (600, 400));
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
 blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
 whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :orange)
@@ -281,7 +281,7 @@ mdata = [temperature, :solar_luminosity]
 model = daisyworld(solar_luminosity = 1.0, scenario = :ramp)
 agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
 
-figure = CairoMakie.Figure(resolution = (600, 600));
+figure = CairoMakie.Figure(size = (600, 600));
 ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
 blackl = lines!(ax1, agent_df[!, :step], agent_df[!, :count_black], color = :red)
 whitel = lines!(ax1, agent_df[!, :step], agent_df[!, :count_white], color = :blue)

@@ -30,14 +30,15 @@ using Random
     growthprog::Float64
     growthrate::Float64
     ## node positions/forces
-    p1::NTuple{2,Float64}
-    p2::NTuple{2,Float64}
-    f1::NTuple{2,Float64}
-    f2::NTuple{2,Float64}
+    p1::SVector{2,Float64}
+    p2::SVector{2,Float64}
+    f1::SVector{2,Float64}
+    f2::SVector{2,Float64}
 end
 
-function SimpleCell(id, pos, l, φ, g, γ)
-    a = SimpleCell(id, pos, l, φ, g, γ, (0.0, 0.0), (0.0, 0.0), (0.0, 0.0), (0.0, 0.0))
+const vel0 = SVector(0.0, 0.0)
+function SimpleCell(model, pos, l, φ, g, γ)
+    a = SimpleCell(model, pos, vel0, l, φ, g, γ, (0.0, 0.0), (0.0, 0.0), (0.0, 0.0), (0.0, 0.0))
     update_nodes!(a)
     return a
 end
@@ -64,9 +65,11 @@ function model_step!(model)
         if a.growthprog ≥ 1
             ## When a cell has matured, it divides into two daughter cells on the
             ## positions of its nodes.
-            add_agent!(a.p1, model, 0.0, a.orientation, 0.0, 0.1 * rand(abmrng(model)) + 0.05)
-            add_agent!(a.p2, model, 0.0, a.orientation, 0.0, 0.1 * rand(abmrng(model)) + 0.05)
-            kill_agent!(a, model)
+            cell1 = SimpleCell(model, a.p1, 0.0, a.orientation, 0.0, 0.1 * rand(abmrng(model)) + 0.05)
+            add_agent!(cell1, model)
+            cell2 = SimpleCell(model, a.p2, 0.0, a.orientation, 0.0, 0.1 * rand(abmrng(model)) + 0.05)
+            add_agent!(cell2, model)
+            remove_agent!(a, model)
         else
             ## The rest lengh of the internal spring grows with time. This causes
             ## the nodes to physically separate.
@@ -111,14 +114,14 @@ function interact!(a1::SimpleCell, a2::SimpleCell, model)
     a2.f2 = @. a2.f2 - (n12 + n22)
 end
 
-function noderepulsion(p1::NTuple{2,Float64}, p2::NTuple{2,Float64}, model::ABM)
+function noderepulsion(p1, p2, model::ABM)
     delta = p1 .- p2
     distance = norm(delta)
     if distance ≤ 1
         uv = delta ./ distance
-        return (model.hardness * (1 - distance)) .* uv
+        return SVector((model.hardness * (1 - distance)) .* uv)
     end
-    return (0, 0)
+    return SVector(0, 0)
 end
 
 function transform_forces(agent::SimpleCell)
@@ -136,15 +139,15 @@ end
 
 # Okay, we can now initialize a model and see what it does.
 
-space = ContinuousSpace((14, 9), 1.0; periodic = false)
-model = ABM(SimpleCell, space; agent_step!, model_step!,
+space = ContinuousSpace((14, 9); spacing = 1.0, periodic = false)
+model = StandardABM(SimpleCell, space; agent_step!, model_step!,
             properties = Dict(:dt => 0.005, :hardness => 1e2, :mobility => 1.0),
             rng = MersenneTwister(1680))
 
 # Let's start with just two agents.
 
-add_agent!((6.5, 4.0), model, 0.0, 0.3, 0.0, 0.1)
-add_agent!((7.5, 4.0), model, 0.0, 0.0, 0.0, 0.1)
+add_agent!(SimpleCell(model, SVector(6.5, 4.0), 0.0, 0.3, 0.0, 0.1), model)
+add_agent!(SimpleCell(model, SVector(7.5, 4.0), 0.0, 0.0, 0.0, 0.1), model)
 
 # The model has several parameters, and some of them are of interest.
 # We could e.g. define
@@ -173,8 +176,8 @@ function cassini_oval(agent)
     R = [cos(θ) -sin(θ); sin(θ) cos(θ)]
 
     bacteria = R * permutedims([x y])
-    coords = [Point2f(x, y) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
-    scale(Polygon(coords), 0.5)
+    coords = [Point2f(x/2, y/2) for (x, y) in zip(bacteria[1, :], bacteria[2, :])]
+    CairoMakie.Polygon(coords)
 end
 
 # set up some nice colors
@@ -183,7 +186,7 @@ bacteria_color(b) = RGBf(b.id * 3.14 % 1, 0.2, 0.2)
 # and proceed with the animation
 abmvideo(
     "bacteria.mp4", model;
-    am = cassini_oval, ac = bacteria_color,
+    agent_marker = cassini_oval, agent_color = bacteria_color,
     spf = 50, framerate = 30, frames = 100,
     title = "Growing bacteria"
 )

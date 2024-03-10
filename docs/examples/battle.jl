@@ -62,11 +62,11 @@ end
 
 # Now let's set up the battle field:
 function battle(; fighters = 50, seed = 6547)
-    model = ABM(
+    model = StandardABM(
         Fighter,
         GridSpace((100, 100, 10); periodic = false);
-        agent_step!
-        scheduler = Schedulers.randomly,
+        agent_step!,
+        scheduler = Schedulers.Randomly(),
         rng = Random.Xoshiro(seed),
     )
 
@@ -82,7 +82,7 @@ function battle(; fighters = 50, seed = 6547)
     return model
 end
 
-# 50 opponents positioned randomly on a 100x100 grid, with no escape
+# 50 opponents positioned Randomly() on a 100x100 grid, with no escape
 # (`periodic = false`). To leverage categorical dimensions fully, non-periodic chebyshev
 # space is necessary.
 
@@ -105,7 +105,7 @@ function closest_target(agent::Fighter, ids::Vector{Int}, model::ABM)
     if length(ids) == 1
         closest = ids[1]
     else
-        close_id = argmin(map(id -> edistance(loc(agent), loc(model[id]), model), ids))
+        close_id = argmin(map(id -> euclidean_distance(loc(agent), loc(model[id]), model), ids))
         closest = ids[close_id]
     end
     return model[closest]
@@ -135,7 +135,7 @@ function battle!(one::Fighter, two::Fighter, model)
     move_agent!(up, (new_pos_up..., new_lvl_up), model)
     new_lvl_down = level(down) - 1
     if new_lvl_down == 0
-        kill_agent!(down, model)
+        remove_agent!(down, model)
     else
         move_agent!(down, (loc(down)..., new_lvl_down), model)
     end
@@ -158,7 +158,7 @@ function captor_behavior!(agent, model)
             agent.shape = :rect
             gain = ceil(Int, level(prisoner) / 2)
             new_lvl = min(level(agent) + gain, 10)
-            kill_agent!(prisoner, model)
+            remove_agent!(prisoner, model)
             agent.has_prisoner = false
             move_agent!(agent, (loc(agent)..., new_lvl), model)
         end
@@ -177,7 +177,7 @@ function captor_behavior!(agent, model)
         exploiter.shape = :rect
         gain = ceil(Int, level(agent) / 2)
         new_lvl = min(level(agent) + rand(abmrng(model), 1:gain), 10)
-        kill_agent!(agent, model)
+        remove_agent!(agent, model)
         move_agent!(exploiter, (loc(exploiter)..., new_lvl), model)
         ## Prisoner runs away in the commotion
         prisoner.shape = :utriangle
@@ -222,7 +222,7 @@ function showdown!(one::Fighter, two::Fighter, model)
         one_winner = rand(abmrng(model)) > level(two) - level(one) * rand(abmrng(model))
     end
 
-    one_winner ? kill_agent!(two, model) : kill_agent!(one, model)
+    one_winner ? remove_agent!(two, model) : remove_agent!(one, model)
 end
 
 # The rest of our interactions flow down a hierarchy, so we'll place them directly in the
@@ -336,7 +336,7 @@ am(a) = a.shape
 markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
 
 # Next, we initialize an axis and plot them
-fig = Figure(resolution = (500, 600))
+fig = Figure(size = (500, 600))
 ax = Axis(fig[1,1]; title = "Battle Royale")
 scatter!(ax, pos; color = colors, marker = markers, markersize = 25)
 e = size(abmspace(model))[1:2] .+ 2

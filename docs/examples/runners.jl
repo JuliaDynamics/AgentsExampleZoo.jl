@@ -32,7 +32,7 @@ function initialize(map_url; goal = (128, 409), seed = 88)
     model = StandardABM(
         Runner,
         space;
-        agent_step!
+        agent_step!,
         rng = MersenneTwister(seed),
         properties = Dict(:goal => goal, :pathfinder => pathfinder)
     )
@@ -68,20 +68,22 @@ map_url =
 model = initialize(map_url)
 
 # and plot
-static_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
+const ABMPlot = Agents.get_ABMPlot_type()
+function Agents.static_preplot!(ax::Axis3, p::ABMPlot)
+    return scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
+end
 
 abmvideo(
     "runners.mp4",
     model;
-    figurekwargs = (resolution = (700, 700),),
+    figurekwargs = (size = (700, 700),),
     frames = 200,
     framerate = 45,
-    ac = :black,
-    as = 8,
-    scatterkwargs = (strokecolor = :white, strokewidth = 2),
+    agent_color = :black,
+    agent_size = 8,
+    agentsplotkwargs = (strokecolor = :white, strokewidth = 2),
     heatarray = model -> penaltymap(model.pathfinder),
     heatkwargs = (colormap = :terrain,),
-    static_preplot!
 )
 
 # ```@raw html

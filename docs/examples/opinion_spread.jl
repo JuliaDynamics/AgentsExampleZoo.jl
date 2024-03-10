@@ -11,7 +11,7 @@
 # They can change their opinion by changing the numbers in the list.
 
 # Agents can change their opinion at each step.
-# They choose one of their neighbors randomly, and adopt one of the neighbor's opinions.
+# They choose one of their neighbors Randomly(), and adopt one of the neighbor's opinions.
 # They are more likely to adopt their neighbor's opinion if they share more opinions with each other.
 
 # Notice that just like the [Forest fire](@ref) and [Conway's game of life](@ref) examples
@@ -41,8 +41,8 @@ function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, 
     model = StandardABM(
         Citizen,
         space;
-        agent_step!
-        scheduler = Schedulers.randomly,
+        agent_step!,
+        scheduler = Schedulers.Randomly(),
         properties = properties,
         rng = MersenneTwister(seed),
     )
@@ -74,8 +74,8 @@ function adopt!(agent, model)
     nmatches = length(intersect(neighbor_opinions, agent_opinions)) # Count how many opinions the neighbor and agent have in common.
 
     if nmatches < model.nopinions && rand(abmrng(model)) < nmatches / model.nopinions
-        neighbor_opinion = sample(abmrng(model), setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and randomly pick one for the agent to adopt.
-        agent_opinion = sample(abmrng(model), setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and randomly pick one to change.
+        neighbor_opinion = sample(abmrng(model), setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and Randomly() pick one for the agent to adopt.
+        agent_opinion = sample(abmrng(model), setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and Randomly() pick one to change.
         replace!(agent.opinion, agent_opinion => neighbor_opinion) # Replace agent's opinion with neighbor's opinion.
     end
 end
@@ -126,9 +126,9 @@ model = create_model(nopinions = 3, levels_per_opinion = 4)
 abmvideo(
     "opinion.mp4",
     model;
-    ac = ac,
-    am = '■',
-    as = 20,
+    agent_color = ac,
+    agent_marker = '■',
+    agent_size = 20,
     framerate = 20,
     frames = 60,
     title = "Opinion Spread",

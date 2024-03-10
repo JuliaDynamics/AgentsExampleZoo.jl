@@ -144,7 +144,7 @@ abmvideo(
 # (see previous example).
 # They can be infected with a disease and transfer the disease to other agents around them.
 
-@agent struct PoorSoul(ContinuousAgent{2, Float64}
+@agent struct PoorSoul(ContinuousAgent{2, Float64})
     mass::Float64
     days_infected::Int  # number of days since is infected
     status::Symbol  # :S, :I or :R
@@ -253,7 +253,7 @@ update!(agent) = agent.status == :I && (agent.days_infected += 1)
 function recover_or_die!(agent, model)
     if agent.days_infected ≥ model.infection_period
         if rand(abmrng(model)) ≤ model.death_rate
-            kill_agent!(agent, model)
+            remove_agent!(agent, model)
         else
             agent.status = :R
             agent.days_infected = 0

@@ -141,7 +141,7 @@ plotsim(ax, data) =
     end
 
 eps = [0.05, 0.15, 0.3]
-figure = Figure(resolution = (600, 600))
+figure = Figure(size = (600, 600))
 for (i, e) in enumerate(eps)
     ax = figure[i, 1] = Axis(figure; title = "epsilon = $e")
     e_data = model_run(ϵ = e)
