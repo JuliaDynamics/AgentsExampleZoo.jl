@@ -1,3 +1,5 @@
+# !!! info "This model is predefined and can be accessed with `AgentsExampleZoo.daisyworld()`"
+#
 # # Daisyworld
 # ```@raw html
 # <video width="auto" controls autoplay loop>
@@ -50,7 +52,6 @@ import StatsBase
     albedo::Float64 # 0-1 fraction
 end
 
-DaisyWorld = ABM{<:GridSpaceSingle, Daisy}
 # %% #src
 # ## World heating
 
@@ -63,13 +64,13 @@ DaisyWorld = ABM{<:GridSpaceSingle, Daisy}
 # The surface temperature of the world is heated by its sun, but daisies growing upon it
 # absorb or reflect the starlight, altering the local temperature.
 
-function update_surface_temperature!(pos, model::DaisyWorld)
+function update_surface_temperature!(pos, model)
     absorbed_luminosity = if isempty(pos, model) # no daisy
         ## Set luminosity via surface albedo
         (1 - model.surface_albedo) * model.solar_luminosity
     else
-        ## Set luminosity via daisy albedo
         daisy = model[id_in_position(pos, model)]
+        ## Set luminosity via daisy albedo
         (1 - daisy.albedo) * model.solar_luminosity
     end
     ## We expect local heating to be 80 ᵒC for an absorbed luminosity of 1,
@@ -80,7 +81,7 @@ function update_surface_temperature!(pos, model::DaisyWorld)
 end
 
 # In addition, temperature diffuses over time
-function diffuse_temperature!(pos, model::DaisyWorld)
+function diffuse_temperature!(pos, model)
     ratio = model.ratio # diffusion ratio
     npos = nearby_positions(pos, model)
     model.temperature[pos...] =
@@ -98,7 +99,7 @@ end
 # daisies compete for land and attempt to spawn a new plant of their `breed` in locations
 # close to them.
 
-function propagate!(pos, model::DaisyWorld)
+function propagate!(pos, model)
     isempty(pos, model) && return
     daisy = model[id_in_position(pos, model)]
     temperature = model.temperature[pos...]
@@ -113,9 +114,9 @@ end
 
 # And if the daisies cross an age threshold, they die out.
 # Death is controlled by the `agent_step!` function
-function daisy_step!(agent::Daisy, model::DaisyWorld)
+function daisy_step!(agent::Daisy, model)
     agent.age += 1
-    agent.age ≥ model.max_age && kill_agent!(agent, model)
+    agent.age ≥ model.max_age && remove_agent!(agent, model)
 end
 
 # The model step function advances Daisyworld's dynamics:
@@ -125,19 +126,17 @@ function daisyworld_step!(model)
         diffuse_temperature!(p, model)
         propagate!(p, model)
     end
-    model.tick += 1
     solar_activity!(model)
 end
 
 # Notice that `solar_activity!` changes the incoming solar radiation over time,
 # if the given "scenario" (a model parameter) is `:ramp`.
-# The parameter `tick` of the model keeps track of time.
-function solar_activity!(model::DaisyWorld)
+function solar_activity!(model)
     if model.scenario == :ramp
-        if model.tick > 200 && model.tick ≤ 400
+        if 200 < abmtime(model) ≤ 400
             model.solar_luminosity += model.solar_change
         end
-        if model.tick > 500 && model.tick ≤ 750
+        if 500 < abmtime(model) ≤ 750
             model.solar_luminosity -= model.solar_change / 2
         end
     elseif model.scenario == :change
@@ -166,7 +165,6 @@ function daisyworld(;
     scenario = :default,
     seed = 165,
 )
-
     rng = MersenneTwister(seed)
     space = GridSpaceSingle(griddims)
     ## Here the model properties is a `NamedTuple`, which avoid type instabilities.
@@ -175,11 +173,11 @@ function daisyworld(;
     ## Create a custom `struct`, but here we'll be lazy and make a abstract
     ## typed dictionary
     properties = (;max_age, surface_albedo, solar_luminosity, solar_change, scenario,
-        tick = 0, ratio = 0.5, temperature = zeros(griddims)
+        ratio = 0.5, temperature = zeros(griddims)
     )
     properties = Dict(k=>v for (k,v) in pairs(properties))
-    model = ABM(Daisy, space; properties, rng, 
-                agent_step! = daisy_step!, model_step! = daisyworld_step!)
+
+    model = StandardABM(Daisy, space; properties, rng, agent_step! = daisy_step!, model_step! = daisyworld_step!)
 
     ## Populate with daisies: each position has only one daisy (black or white)
     grid = collect(positions(model))
@@ -187,13 +185,13 @@ function daisyworld(;
     white_positions =
         StatsBase.sample(grid, Int(init_white * num_positions); replace = false)
     for wp in white_positions
-        add_agent!(wp, model, wp, :white, rand(abmrng(model), 0:max_age), albedo_white)
+        add_agent!(wp, Daisy, model, :white, rand(abmrng(model), 0:max_age), albedo_white)
     end
     allowed = setdiff(grid, white_positions)
     black_positions =
         StatsBase.sample(allowed, Int(init_black * num_positions); replace = false)
     for bp in black_positions
-        add_agent!(bp, model, :black, rand(abmrng(model), 0:max_age), albedo_blac)
+        add_agent!(bp, Daisy, model, :black, rand(abmrng(model), 0:max_age), albedo_black)
     end
 
     ## Adjust temperature to initial daisy distribution
@@ -204,12 +202,10 @@ function daisyworld(;
     return model
 end
 
-
 # ## Visualizing & animating
 # %% #src
 # Lets run the model with constant solar isolation and visualize the result
 using CairoMakie
-
 model = daisyworld()
 
 # To visualize we need to define the necessary functions for [`abmplot`](@ref).
@@ -223,7 +219,7 @@ model = daisyworld()
 daisycolor(a::Daisy) = a.breed
 
 plotkwargs = (
-    ac=daisycolor, as = 20, am = '✿',
+    agent_color=daisycolor, agent_size = 20, agent_marker = '✿',
     heatarray = :temperature,
     heatkwargs = (colorrange = (-20, 60),),
 )
@@ -264,7 +260,7 @@ adata = [(black, count), (white, count)]
 model = daisyworld(; solar_luminosity = 1.0)
 
 agent_df, model_df = run!(model, 1000; adata)
-figure = Figure(resolution = (600, 400))
+figure = Figure(resolution = (600, 400));
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
 blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
 whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :orange)
@@ -285,7 +281,7 @@ mdata = [temperature, :solar_luminosity]
 model = daisyworld(solar_luminosity = 1.0, scenario = :ramp)
 agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
 
-figure = CairoMakie.Figure(resolution = (600, 600))
+figure = CairoMakie.Figure(resolution = (600, 600));
 ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
 blackl = lines!(ax1, agent_df[!, :step], agent_df[!, :count_black], color = :red)
 whitel = lines!(ax1, agent_df[!, :step], agent_df[!, :count_white], color = :blue)
