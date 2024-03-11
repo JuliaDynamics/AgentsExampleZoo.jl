@@ -308,7 +308,6 @@ function antworld_step!(model)
 end
 
 # ## Displaying and Running
-using GLMakie
 using CairoMakie
 
 # Establish a `ConsoleLogger` to follow what is happening in the model run. 
@@ -352,11 +351,10 @@ plotkwargs = (
 
 # #### Running the model. 
 # There are two options, to explore or to simply get a video of the run. 
-video = false
+video = true
 with_logger(debuglogger) do
     model = initialize_model(;number_ants = 125, random_seed = 6666, pheromone_amount = 60, evaporation_rate = 5)
     if !video    
-        GLMakie.activate!(inline = false)
         params = Dict(
             :evaporation_rate => 0:1:100,
             :diffusion_rate => 0:1:100,
@@ -379,7 +377,6 @@ with_logger(debuglogger) do
         display(fig)
         @info "fig: $(fig)\n ax: $(ax)\n abmobs: $(abmobs)"
     else
-        GLMakie.activate!()
         @info "Starting creating a video"
         abmvideo(
             "antworld.mp4",
