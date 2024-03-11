@@ -37,7 +37,7 @@ function forest_fire(; density = 0.7, griddims = (100, 100), seed = 2)
     rng = Random.MersenneTwister(seed)
     ## The `trees` field is coded such that
     ## Empty = 0, Green = 1, Burning = 2, Burnt = 3
-    forest = StandardABM(Automata, space; rng, agent_step! = tree_step!,
+    forest = StandardABM(Automata, space; rng, model_step! = tree_step!,
                  properties = (trees = zeros(Int, griddims),), container = Vector)
     for I in CartesianIndices(forest.trees)
         if rand(abmrng(forest)) < density
@@ -62,6 +62,7 @@ function tree_step!(forest)
         ## Finally, any burning tree is burnt out (2)
         forest.trees[I] = 3
     end
+    return forest.trees
 end
 
 # ## Running the model
@@ -105,7 +106,6 @@ forest = forest_fire(density = 0.7, seed = 10)
 abmvideo(
     "forest.mp4",
     forest;
-    agent_size = 0,
     framerate = 5,
     frames = 20,
     spf = 5,
