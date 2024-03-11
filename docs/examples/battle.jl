@@ -329,11 +329,11 @@ modelobs = abmobs.model
 
 # First, we make the positions, colors and markers observables for the agents
 by_id = Schedulers.ByID()
-pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs)
+pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs);
 ac(agent) = to_color(cgrad(:tab10)[level(agent)])
-colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs)
+colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs);
 am(a) = a.shape
-markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
+markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs);
 
 # Next, we initialize an axis and plot them
 fig = Figure(size = (500, 600))
@@ -347,7 +347,7 @@ fig
 
 # Seems great so far! Let's add the legend
 actions = [:rect, :utriangle, :circle, :pentagon, :diamond, :vline, :hline, :star4]
-label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
+label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"];
 group_action = [
     MarkerElement(
         marker = marker,
@@ -355,10 +355,10 @@ group_action = [
         strokecolor = :transparent,
         markersize = 15,
     ) for marker in actions
-]
+];
 group_level = [
     PolyElement(color = color, strokecolor = :transparent) for color in cgrad(:tab10)[1:10]
-]
+];
 
 Legend(
     fig[2, 1],
