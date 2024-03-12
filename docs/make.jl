@@ -92,7 +92,7 @@ if !isempty(NEW_EXAMPLES)
 end
 
 makedocs(
-    modules = [Agents, InteractiveDynamics],
+    modules = [Agents],
     sitename = "Agents.jl Example Zoo",
     authors = "George Datseris and contributors.",
     doctest = false,
