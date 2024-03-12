@@ -35,6 +35,8 @@ Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
+println("AgentsExampleZoo...")
+using AgentsExampleZoo
 println("Agents...")
 using Agents
 println("Literate...")
