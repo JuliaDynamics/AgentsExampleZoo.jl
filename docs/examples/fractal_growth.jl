@@ -20,7 +20,7 @@
 
 # It is also available from the `Models` module as [`Models.fractal_growth`](@ref).
 using Agents, LinearAlgebra
-using Random # hide
+using Random
 
 # We use the [`@agent`](@ref) macro to conveniently define a `Particle` agent. Each agent
 # has a radius, representing the particle size, a boolean to define whether it is stuck and part of the fractal,
@@ -168,43 +168,5 @@ abmvideo(
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../fractal.mp4" type="video/mp4">
-# </video>
-# ```
-
-# Using `InteractiveDynamics` simulation parameters can also be tweaked
-# dynamically. This makes use of the [`InteractiveDynamics.abm_data_exploration`](@ref) function.
-
-# ```julia
-# using InteractiveDynamics
-# using GLMakie # This plotting backend allows for interactivity
-# model = initialize_model()
-# ```
-
-# `params` defines the range in which different parameter values can be adjusted through
-# sliders.
-# ```julia
-# params = (
-#     :attraction => 0.0:0.01:2.0,
-#     :speed => 0.0:0.01:2.0,
-#     :vibration => 0.0:0.01:2.0,
-#     :spin => 0.0:0.01:2.0,
-#     :clockwise_fraction => 0.0:0.01:1.0,
-#     :min_radius => 0.5:0.01:3.0,
-#     :max_radius => 0.5:0.01:3.0,
-# )
-#
-# particle_size(a::Particle) = 4 * a.radius
-# abm_data_exploration(
-#     model,
-#     params;
-#     ac = particle_color,
-#     as = particle_size,
-#     am = '⚪',
-# )
-# ```
-#
-# ```@raw html
-# <video width="auto" controls autoplay loop>
-# <source src="https://raw.githubusercontent.com/JuliaDynamics/JuliaDynamics/master/videos/agents/fractal_interact.mp4?raw=true" type="video/mp4">
 # </video>
 # ```
