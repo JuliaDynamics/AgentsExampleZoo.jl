@@ -309,7 +309,7 @@ adata[1:10,:]
 figure = Figure(size = (600, 600))
 step_number = Observable(0)
 title_text = @lift("Wealth distribution of individuals, step = $($step_number)")
-Label(figure[1, 1], title_text; textsize=20, tellwidth=false)
+Label(figure[1, 1], title_text; fontsize=20, tellwidth=false)
 ax = Axis(figure[2, 1]; xlabel="Wealth", ylabel="Number of agents")
 histdata = Observable(adata[adata.step .== 20, :wealth])
 hist!(ax, histdata; bar_position=:step)
