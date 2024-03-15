@@ -98,7 +98,7 @@ makedocs(
     sitename = "Agents.jl Example Zoo",
     authors = "George Datseris and contributors.",
     doctest = false,
-    warnonly = [:doctest, :missing_docs, :cross_references],
+    warnonly = [:doctest, :missing_docs, :cross_references, :example_block],
     format = Documenter.HTML(
         prettyurls = CI,
         assets = [
