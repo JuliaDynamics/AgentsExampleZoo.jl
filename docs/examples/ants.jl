@@ -35,27 +35,16 @@
 # Each ant has a `has_food` attribute, showing if the ant is currently carrying food, 
 # a `facing_direction` (a number between 1 and 8) describing the direction they are heading,
 # and a `food_collected` which is the amount of food an individual ant has collected.
-
-#import Pkg
-#Pkg.activate("antworld19")
-#Pkg.add("FFMPEG")
-#Pkg.add("Agents")
-#Pkg.add("DynamicalSystems")
-
 using Agents
 using Random
 using Logging
 
-@agent Ant GridAgent{2} begin
+@agent struct Ant(GridAgent{2})
     has_food::Bool
     facing_direction::Int
     food_collected::Int
     food_collected_once::Bool
 end
-
-# It is built with a `GridSpace` because our ants can climb over each other and
-# occupy the same spaces, thus not requiring `GridSpaceSingle`.
-AntWorld = ABM{<:GridSpace, Ant}
 
 # `adjacent_dict` defines the adjacent positions to the current position, and is also
 # associated with the direction the ant is facing.
@@ -82,7 +71,6 @@ mutable struct AntWorldProperties
     food_source_number::Matrix 
     food_collected::Int  
     diffusion_rate::Int 
-    tick::Int
     x_dimension::Int
     y_dimension::Int
     nest_size::Int
@@ -160,7 +148,6 @@ function initialize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70),
         food_source_number, 
         food_collected, 
         diffusion_rate, 
-        0, 
         dimensions[1], 
         dimensions[2], 
         nest_size, 
@@ -171,17 +158,19 @@ function initialize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70),
         pheromone_ceiling
         ) 
 
-    model = UnremovableABM(
+    model = StandardABM(
         Ant, 
         GridSpace(dimensions, periodic = false); 
         properties,
         rng, 
-        scheduler = Schedulers.Randomly()
+        agent_step! = ant_step!,
+        model_step! = antworld_step!,
+        scheduler = Schedulers.Randomly(),
+        container = Vector
     )
 
     for n in 1:number_ants
-        agent = Ant(n, (x_center, y_center), false, rand(model.rng, range(1, 8)), 0, false)
-        add_agent_pos!(agent, model)
+        add_agent!((x_center, y_center), model, false, rand(abmrng(model), 1:8), 0, false)
     end
     @info "Finished the model initialization"
     return model
@@ -221,9 +210,9 @@ turn_around(agent) = agent.facing_direction = mod1(agent.facing_direction + numb
 # ### Wiggle
 #
 # Introduces the ability for some randomness in the ants behavior. Even when following a trail,
-# this will cause ants to randomly face somewhere in a 45 degree direction of what is ideal for them. 
-function wiggle(agent::Ant, model::AntWorld)
-    direction = rand(model.rng, [0, rand(model.rng, [-1, 1])])
+# this will cause ants to Randomly() face somewhere in a 45 degree direction of what is ideal for them. 
+function wiggle(agent::Ant, model)
+    direction = rand(abmrng(model), [0, rand(abmrng(model), [-1, 1])])
     agent.facing_direction = mod1(agent.facing_direction + direction, number_directions)
 end
 
@@ -232,7 +221,7 @@ end
 # Applies pheromone to the grid. Used by the `Ant` when carrying food back to the nest. By default it only applies
 # pheromone to the grid the `Ant` is currently on, but there is an option to spread the pheromone to perpendicular
 # spaces at the same time. 
-function apply_pheromone(agent::Ant, model::AntWorld; pheromone_val::Int = 60, spread_pheromone::Bool = false)
+function apply_pheromone(agent::Ant, model; pheromone_val::Int = 60, spread_pheromone::Bool = false)
     model.pheromone_trails[agent.pos...] += pheromone_val
     model.pheromone_trails[agent.pos...]  = model.pheromone_trails[agent.pos...] ≥ model.pheromone_floor ? model.pheromone_trails[agent.pos...] : 0
 
@@ -275,7 +264,7 @@ end
 # If the `Ant` doesn't have food, but it is at a food location, it picks up food and turns around. If it's not at a food
 # location, it tries to follow a pheromone trail to food. \
 # Then it applies a wiggle (random search if without food) and then moves the agent. 
-function ant_step!(agent::Ant, model::AntWorld)
+function ant_step!(agent::Ant, model)
     @debug "Agent State: \n  pos: $(agent.pos)\n  pos_type:$(typeof(agent.pos)) facing_direction: $(agent.facing_direction)\n  has_food: $(agent.has_food)"
     if agent.has_food
         if model.nest_locations[agent.pos...] > 100 - model.nest_size
@@ -309,19 +298,16 @@ end
 # The model step for `AntWorld`. First, it diffuses the chemicals out across the grid. \
 # Then it evaporates some of pheromone from every grid space. \
 # The map! function reduces the amount of pheromone_trails.
-function antworld_step!(model::AntWorld)
+function antworld_step!(model)
     diffuse(model.pheromone_trails, model.diffusion_rate)
     map!((x) -> x ≥ model.pheromone_floor ? x * (100 - model.evaporation_rate) / 100 : 0., model.pheromone_trails, model.pheromone_trails)
 
-    model.tick += 1
-    if mod1(model.tick, 100) == 100
-        @info "Step $(model.tick)"
+    if mod1(abmtime(model), 100) == 100
+        @info "Step $(abmtime(model))"
     end
 end
 
 # ## Displaying and Running
-using DynamicalSystems
-using GLMakie
 using CairoMakie
 
 # Establish a `ConsoleLogger` to follow what is happening in the model run. 
@@ -332,7 +318,7 @@ debuglogger = ConsoleLogger(stderr, Logging.Info)
 # This function builds a heat map based on various map properties to display in the grid. \
 # It shows the nest location, food locations, and pheromone trails. \
 # Set the value of the heatmap to NaN so it displays as white
-function heatmap(model::AntWorld)
+function heatmap(model)
     heatmap = zeros((model.x_dimension, model.y_dimension))
     for x_val in 1:model.x_dimension
         for y_val in 1:model.y_dimension
@@ -358,18 +344,17 @@ ant_color(ant::Ant) = ant.has_food ? :red : :black
 # as (agent size) = the size of the agent \
 # am (agent model) = the icon to use for the agent, here a diamond. 
 plotkwargs = (
-    ac = ant_color, as = 20, am = '♦',
+    agent_color = ant_color, agent_size = 20, agent_marker = '♦',
     heatarray = heatmap,
     heatkwargs = (colormap = Reverse(:viridis), colorrange = (0, 200),)
 )
 
 # #### Running the model. 
 # There are two options, to explore or to simply get a video of the run. 
-video = false
+video = true
 with_logger(debuglogger) do
     model = initialize_model(;number_ants = 125, random_seed = 6666, pheromone_amount = 60, evaporation_rate = 5)
     if !video    
-        GLMakie.activate!(inline = false)
         params = Dict(
             :evaporation_rate => 0:1:100,
             :diffusion_rate => 0:1:100,
@@ -383,8 +368,6 @@ with_logger(debuglogger) do
         @info "Starting exploration"
         fig, ax, abmobs = abmplot(
             model;
-            agent_step! = ant_step!,
-            model_step! = antworld_step!,
             params,
             plotkwargs...,
             adata, alabels = ["Num Ants Collected"],
@@ -394,13 +377,10 @@ with_logger(debuglogger) do
         display(fig)
         @info "fig: $(fig)\n ax: $(ax)\n abmobs: $(abmobs)"
     else
-        GLMakie.activate!()
         @info "Starting creating a video"
         abmvideo(
             "antworld.mp4",
-            model,
-            ant_step!,
-            antworld_step!;
+            model;
             title = "Ant World",
             frames = 1000,
             plotkwargs...,

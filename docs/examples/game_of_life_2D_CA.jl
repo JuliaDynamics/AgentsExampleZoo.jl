@@ -28,7 +28,7 @@ rules = (2, 3, 3, 3) # (D, S, R, O)
 # whose "color" or "status" is the only thing necessary for the simulation.
 
 # We still need to define a dummy agent type though for `ABM`:
-@agent Automaton GridAgent{2} begin end
+@agent struct Automaton(GridAgent{2}) end
 
 # The following function builds a 2D cellular automaton given some `rules`.
 # `dims` is a tuple of integers determining the width and height of the grid environment.
@@ -48,17 +48,16 @@ function build_model(rules::Tuple;
     new_status = zeros(Bool, dims)
     ## We use a `NamedTuple` for the parameter container to avoid type instabilities
     properties = (; rules, status, new_status)
-    model = ABM(Automaton, space; properties, rng = MersenneTwister(seed))
+    model = StandardABM(Automaton, space; properties, model_step! = game_of_life_step!,
+                rng = MersenneTwister(seed), container = Vector)
     ## Turn some of the cells on
     for pos in positions(model)
-        if rand(model.rng) < alive_probability
+        if rand(abmrng(model)) < alive_probability
             status[pos...] = true
         end
     end
     return model
 end
-
-model = build_model(rules)
 
 # Now we define a stepping function for the model to apply the rules to agents.
 # We will also perform a synchronous agent update (meaning that the value of all
@@ -70,9 +69,9 @@ function game_of_life_step!(model)
     @inbounds for pos in positions(model)
         ## Convenience function that counts how many nearby cells are "alive"
         n = alive_neighbors(pos, model)
-        if status[pos...] == true && (n ≤ model.rules[4] && n ≥ model.rules[1])
+        if status[pos...] == true && model.rules[1] ≤ n ≤ model.rules[4]
             new_status[pos...] = true
-        elseif status[pos...] == false && (n ≥ model.rules[3] && n ≤ model.rules[4])
+        elseif status[pos...] == false && model.rules[3] ≤ n ≤ model.rules[4]
             new_status[pos...] = true
         else
             new_status[pos...] = false
@@ -96,13 +95,10 @@ end
 # now we can instantiate the model:
 model = build_model(rules)
 
-
 # ## 3. Animate the model
 
 # We use the [`InteractiveDynamics.abmvideo`](@ref) for creating an animation and saving it to an mp4
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 plotkwargs = (
     add_colorbar = false,
@@ -115,9 +111,7 @@ plotkwargs = (
 
 abmvideo(
     "game_of_life.mp4",
-    model,
-    dummystep,
-    game_of_life_step!;
+    model;
     title = "Game of Life",
     framerate = 10,
     frames = 60,

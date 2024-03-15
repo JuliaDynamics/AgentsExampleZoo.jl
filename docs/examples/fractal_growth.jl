@@ -7,7 +7,7 @@
 # ```
 
 # This model follows the process known as diffusion-limited aggregation to simulate the growth of fractals.
-# It is a kinetic process that consists of randomly diffusing particles giving rise to fractal-like structures
+# It is a kinetic process that consists of Randomly() diffusing particles giving rise to fractal-like structures
 # resembling those observed naturally. This examplet is based off of
 # ["Particularly Stuck" example](https://www.complexity-explorables.org/explorables/particularly-stuck/)
 # in Complexity Explorables.
@@ -20,27 +20,21 @@
 
 # It is also available from the `Models` module as [`Models.fractal_growth`](@ref).
 using Agents, LinearAlgebra
-using Random # hide
+using Random
 
 # We use the [`@agent`](@ref) macro to conveniently define a `Particle` agent. Each agent
 # has a radius, representing the particle size, a boolean to define whether it is stuck and part of the fractal,
 # and an axis around which it spins (elaborated on later). In addition, since we use the [`ContinuousAgent`](@ref)
 # type, the [`@agent`](@ref) macro also provides each agent with fields for `id`, `pos` (its position in space) and
 # `vel` (its velocity).
-@agent Particle ContinuousAgent{2} begin
+@agent struct Particle(ContinuousAgent{2, Float64})
     radius::Float64
     is_stuck::Bool
     spin_axis::Array{Float64,1}
 end
 
-# A custom constructor allows convenient creation of agents.
-Particle(
-    id::Int,
-    radius::Float64,
-    spin_clockwise::Bool;
-    pos = (0.0, 0.0),
-    is_stuck = false,
-) = Particle(id, pos, (0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
+propParticle(radius::Float64, spin_clockwise::Bool; is_stuck = false,) = 
+    ((0.0, 0.0), radius, is_stuck, [0.0, 0.0, spin_clockwise ? -1.0 : 1.0])
 
 # We also define a few utility functions for ease of implementation.
 # `rand_circle` returns a random point on the unit circle. `particle_radius`
@@ -52,7 +46,7 @@ particle_radius(min_radius::Float64, max_radius::Float64, rng) =
     min_radius <= max_radius ? rand(rng, min_radius:0.01:max_radius) : min_radius
 
 # The `initialize_model` function returns a new model containing particles placed
-# randomly in the given space and one seed particle at the center.
+# Randomly() in the given space and one seed particle at the center.
 function initialize_model(;
     initial_particles::Int = 100, # initial particles in the model, not including the seed
     ## size of the space in which particles exist
@@ -78,29 +72,22 @@ function initialize_model(;
         :spawn_count => 0,
     )
     ## space is periodic to allow particles going off one edge to wrap around to the opposite
-    space = ContinuousSpace(space_extents, 1.0; periodic = true)
-    model = ABM(Particle, space; properties, rng = Random.MersenneTwister(seed))
+    space = ContinuousSpace(space_extents; spacing = 1.0, periodic = true)
+    model = ABM(Particle, space; properties, agent_step!, model_step!,
+                rng = MersenneTwister(seed))
     center = space_extents ./ 2.0
     for i in 1:initial_particles
-        particle = Particle(
-            i,
-            particle_radius(min_radius, max_radius, model.rng),
-            rand(model.rng) < clockwise_fraction,
-        )
+        radius = particle_radius(min_radius, max_radius, abmrng(model))
+        props = propParticle(radius, rand(abmrng(model)) < clockwise_fraction)
         ## `add_agent!` automatically gives the particle a random position in the space
-        add_agent!(particle, model)
+        add_agent!(model, props...)
     end
     ## create the seed particle
-    particle = Particle(
-        initial_particles + 1,
-        particle_radius(min_radius, max_radius, model.rng),
-        true;
-        pos = center,
-        is_stuck = true,
-    )
+    radius = particle_radius(min_radius, max_radius, abmrng(model))
+    props_seed_particle = propParticle(radius, true; is_stuck = true)
     ## `add_agent_pos!` will use the position of the agent passed in, instead of assigning it
     ## to a random value
-    add_agent_pos!(particle, model)
+    add_agent!(center, model, props_seed_particle...)
     return model
 end
 
@@ -126,14 +113,14 @@ function agent_step!(agent::Particle, model)
         end
     end
     ## radial vector towards the center of the space
-    radial = model.space.extent ./ 2.0 .- agent.pos
+    radial = abmspace(model).extent ./ 2.0 .- agent.pos
     radial = radial ./ norm(radial)
     ## tangential vector in the direction of orbit of the particle
     tangent = Tuple(cross([radial..., 0.0], agent.spin_axis)[1:2])
     agent.vel =
         (
             radial .* model.attraction .+ tangent .* model.spin .+
-            rand_circle(model.rng) .* model.vibration
+            rand_circle(abmrng(model)) .* model.vibration
         ) ./ (agent.radius^2.0)
     move_agent!(agent, model, model.speed)
 end
@@ -142,13 +129,10 @@ end
 # as they get stuck to the growing fractal.
 function model_step!(model)
     while model.spawn_count > 0
-        particle = Particle(
-            nextid(model),
-            particle_radius(model.min_radius, model.max_radius, model.rng),
-            rand(model.rng) < model.clockwise_fraction;
-            pos = (rand_circle(model.rng) .+ 1.0) .* model.space.extent .* 0.49,
-        )
-        add_agent_pos!(particle, model)
+        radius = particle_radius(model.min_radius, model.max_radius, abmrng(model))
+        props = propParticle(radius, rand(abmrng(model)) < model.clockwise_fraction)
+        pos = (rand_circle(abmrng(model)) .+ 1.0) .* abmspace(model).extent .* 0.49
+        add_agent!(pos, model, props...)
         model.spawn_count -= 1
     end
 end
@@ -159,9 +143,7 @@ end
 # the fractal growth can be visualised as it happens. `InteractiveDynamics` provides the `abmvideo` function to easily record a video of the simulation running.
 model = initialize_model()
 
-using InteractiveDynamics
-import CairoMakie
-CairoMakie.activate!() # hide
+using CairoMakie
 
 # Particles that are stuck and part of the fractal are shown in red, for visual distinction
 particle_color(a::Particle) = a.is_stuck ? :red : :blue
@@ -172,61 +154,19 @@ particle_size(a::Particle) = 7.5 * a.radius
 
 abmvideo(
     "fractal.mp4",
-    model,
-    agent_step!,
-    model_step!;
-    ac = particle_color,
-    as = particle_size,
-    am = '●',
+    model;
+    agent_color = particle_color,
+    agent_size = particle_size,
+    agent_marker = '●',
     spf = 20,
     frames = 60,
     framerate = 25,
     title = "Fractal Growth",
-    scatterkwargs = (strokewidth = 0.5, strokecolor = :white),
+    agentsplotkwargs = (strokewidth = 0.5, strokecolor = :white),
 )
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>
 # <source src="../fractal.mp4" type="video/mp4">
-# </video>
-# ```
-
-# Using `InteractiveDynamics` simulation parameters can also be tweaked
-# dynamically. This makes use of the [`InteractiveDynamics.abm_data_exploration`](@ref) function.
-
-# ```julia
-# using InteractiveDynamics
-# using GLMakie # This plotting backend allows for interactivity
-# model = initialize_model()
-# ```
-
-# `params` defines the range in which different parameter values can be adjusted through
-# sliders.
-# ```julia
-# params = (
-#     :attraction => 0.0:0.01:2.0,
-#     :speed => 0.0:0.01:2.0,
-#     :vibration => 0.0:0.01:2.0,
-#     :spin => 0.0:0.01:2.0,
-#     :clockwise_fraction => 0.0:0.01:1.0,
-#     :min_radius => 0.5:0.01:3.0,
-#     :max_radius => 0.5:0.01:3.0,
-# )
-#
-# particle_size(a::Particle) = 4 * a.radius
-# abm_data_exploration(
-#     model,
-#     agent_step!,
-#     model_step!,
-#     params;
-#     ac = particle_color,
-#     as = particle_size,
-#     am = '⚪',
-# )
-# ```
-#
-# ```@raw html
-# <video width="auto" controls autoplay loop>
-# <source src="https://raw.githubusercontent.com/JuliaDynamics/JuliaDynamics/master/videos/agents/fractal_interact.mp4?raw=true" type="video/mp4">
 # </video>
 # ```

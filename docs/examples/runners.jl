@@ -15,7 +15,7 @@ using Agents, Agents.Pathfinding
 using Random
 using FileIO # To load images you also need ImageMagick available to your project
 
-@agent Runner GridAgent{2} begin end
+@agent struct Runner(GridAgent{2}) end
 
 # Our agent, as you can see, is very simple. Just an `id` and `pos`ition provided by
 # [`@agent`](@ref). The rest of the dynamics of this example will be provided by the model.
@@ -29,15 +29,16 @@ function initialize(map_url; goal = (128, 409), seed = 88)
     ## The pathfinder. We use the `MaxDistance` metric since we want the runners
     ## to look for the easiest path to run, not just the most direct.
     pathfinder = AStar(space; cost_metric = PenaltyMap(heightmap, MaxDistance{2}()))
-    model = ABM(
+    model = StandardABM(
         Runner,
         space;
+        agent_step!,
         rng = MersenneTwister(seed),
         properties = Dict(:goal => goal, :pathfinder => pathfinder)
     )
     for _ in 1:10
         ## Place runners in the low-lying space in the map.
-        runner = add_agent!((rand(model.rng, 100:350), rand(model.rng, 50:200)), model)
+        runner = add_agent!((rand(abmrng(model), 100:350), rand(abmrng(model), 50:200)), model)
         ## Everyone wants to get to the same place.
         plan_route!(runner, goal, model.pathfinder)
     end
@@ -58,9 +59,7 @@ agent_step!(agent, model) = move_along_route!(agent, model, model.pathfinder)
 # Plotting is simple enough. We just need to use the [`InteractiveDynamics.abmplot`](@ref)
 # for our runners, and display the heightmap for our reference. A better interface to do
 # this is currently a work in progress.
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 # We load the sample heightmap
 map_url =
@@ -69,21 +68,22 @@ map_url =
 model = initialize(map_url)
 
 # and plot
-static_preplot!(ax, model) = scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
+const ABMPlot = Agents.get_ABMPlot_type()
+function Agents.static_preplot!(ax::Axis3, p::ABMPlot)
+    return scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
+end
 
 abmvideo(
     "runners.mp4",
-    model,
-    agent_step!;
-    figurekwargs = (resolution = (700, 700),),
+    model;
+    figurekwargs = (size = (700, 700),),
     frames = 200,
     framerate = 45,
-    ac = :black,
-    as = 8,
-    scatterkwargs = (strokecolor = :white, strokewidth = 2),
+    agent_color = :black,
+    agent_size = 8,
+    agentsplotkwargs = (strokecolor = :white, strokewidth = 2),
     heatarray = model -> penaltymap(model.pathfinder),
     heatkwargs = (colormap = :terrain,),
-    static_preplot!
 )
 
 # ```@raw html

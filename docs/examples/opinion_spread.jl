@@ -11,7 +11,7 @@
 # They can change their opinion by changing the numbers in the list.
 
 # Agents can change their opinion at each step.
-# They choose one of their neighbors randomly, and adopt one of the neighbor's opinions.
+# They choose one of their neighbors Randomly(), and adopt one of the neighbor's opinions.
 # They are more likely to adopt their neighbor's opinion if they share more opinions with each other.
 
 # Notice that just like the [Forest fire](@ref) and [Conway's game of life](@ref) examples
@@ -23,17 +23,13 @@
 # and hence this example follows this approach.
 
 using Agents
-using InteractiveDynamics # plotting agents
 using CairoMakie # for static plotting
-CairoMakie.activate!() # hide
 using Random
 using StatsBase
 
 # ## Model creation
 
-mutable struct Citizen <: AbstractAgent
-    id::Int
-    pos::NTuple{2, Int}
+@agent struct Citizen(GridAgent{2})
     stabilized::Bool
     opinion::Array{Int,1}
     prev_opinion::Array{Int,1}
@@ -42,21 +38,18 @@ end
 function create_model(; dims = (10, 10), nopinions = 3, levels_per_opinion = 4, seed = 648)
     space = GridSpace(dims)
     properties = Dict(:nopinions => nopinions)
-    model = AgentBasedModel(
+    model = StandardABM(
         Citizen,
-        space,
-        scheduler = Schedulers.randomly,
+        space;
+        agent_step!,
+        scheduler = Schedulers.Randomly(),
         properties = properties,
-        rng = Random.MersenneTwister(seed),
+        rng = MersenneTwister(seed),
     )
     for pos in positions(model)
-        add_agent!(
-            pos,
-            model,
-            false,
-            sample(model.rng, 1:levels_per_opinion, nopinions, replace = false),
-            sample(model.rng, 1:levels_per_opinion, nopinions, replace = false)
-        )
+        opinion = sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
+        prev_opinion = sample(abmrng(model), 1:levels_per_opinion, nopinions, replace = false)
+        add_agent!(pos, model, false, opinion, prev_opinion)
     end
     return model
 end
@@ -75,14 +68,14 @@ function update_prev_opinion!(agent, model)
 end
 
 function adopt!(agent, model)
-    neighbor = sample(model.rng, collect(nearby_ids(agent, model))) # Randomly select a neighbor.
+    neighbor = sample(abmrng(model), collect(nearby_ids(agent, model))) # Randomly select a neighbor.
     neighbor_opinions = model[neighbor].opinion # Look up neighbor's opinions.
     agent_opinions = agent.opinion # Look up agent's opinions.
     nmatches = length(intersect(neighbor_opinions, agent_opinions)) # Count how many opinions the neighbor and agent have in common.
 
-    if nmatches < model.nopinions && rand(model.rng) < nmatches / model.nopinions
-        neighbor_opinion = sample(model.rng, setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and randomly pick one for the agent to adopt.
-        agent_opinion = sample(model.rng, setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and randomly pick one to change.
+    if nmatches < model.nopinions && rand(abmrng(model)) < nmatches / model.nopinions
+        neighbor_opinion = sample(abmrng(model), setdiff(neighbor_opinions, agent_opinions)) # Find which opinions the neighbor has that the agent doesn't and Randomly() pick one for the agent to adopt.
+        agent_opinion = sample(abmrng(model), setdiff(agent_opinions, neighbor_opinions)) # Find which opinions the agent has that the neighbour doesn't and Randomly() pick one to change.
         replace!(agent.opinion, agent_opinion => neighbor_opinion) # Replace agent's opinion with neighbor's opinion.
     end
 end
@@ -105,7 +98,7 @@ rununtil(model, s) = count(a -> a.stabilized, allagents(model)) == length(positi
 
 model = create_model(nopinions = 3, levels_per_opinion = 4)
 
-agentdata, _ = run!(model, agent_step!, dummystep, rununtil, adata = [(:stabilized, count)])
+agentdata, _ = run!(model, rununtil, adata = [(:stabilized, count)])
 
 # ## Plotting
 
@@ -132,11 +125,10 @@ model = create_model(nopinions = 3, levels_per_opinion = 4)
 
 abmvideo(
     "opinion.mp4",
-    model,
-    agent_step!;
-    ac = ac,
-    am = '■',
-    as = 20,
+    model;
+    agent_color = ac,
+    agent_marker = '■',
+    agent_size = 20,
     framerate = 20,
     frames = 60,
     title = "Opinion Spread",

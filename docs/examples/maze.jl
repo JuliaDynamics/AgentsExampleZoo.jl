@@ -12,14 +12,14 @@ using Agents, Agents.Pathfinding
 using FileIO # To load images you also need ImageMagick available to your project
 
 # The `Walker` agent needs no special property, just the `id` and `position` from [`@agent`](@ref).
-@agent Walker GridAgent{2} begin end
+@agent struct Walker(GridAgent{2}) end
 
 # The maze is stored as a simple .bmp image, where each pixel corresponds to a position on the grid.
 # White pixels correspond to walkable regions of the maze.
-function initalize_model(map_url)
+function initialize_model(maze_map)
     ## Load the maze from the image file. White values can be identified by a
     ## non-zero red component
-    maze = BitArray(map(x -> x.r > 0, load(download(map_url))))
+    maze = BitArray(map(x -> x.r > 0, maze_map))
     ## The size of the space is the size of the maze
     space = GridSpace(size(maze); periodic = false)
     ## Create a pathfinder using the AStar algorithm by providing the space and specifying
@@ -29,47 +29,43 @@ function initalize_model(map_url)
     ## `diagonal_movement` is set to false to prevent cutting corners by going along
     ## diagonals.
     pathfinder = AStar(space; walkmap=maze, diagonal_movement=false)
-    model = ABM(Walker, space)
+    model = StandardABM(Walker, space; agent_step!)
     ## Place a walker at the start of the maze
-    walker = Walker(1, (1, 4))
-    add_agent_pos!(walker, model)
+    add_agent!((1, 4), model)
     ## The walker's movement target is the end of the maze.
-    plan_route!(walker, (41, 32), pathfinder)
+    plan_route!(model[1], (41, 32), pathfinder)
 
     return model, pathfinder
 end
+
+# ## Dynamics
+# Stepping the agent is a trivial matter of calling [`move_along_route!`](@ref) to move it along it's path to
+# the target.
+agent_step!(agent, model) = move_along_route!(agent, model, pathfinder)
 
 ## Our sample walkmap
 map_url =
     "https://raw.githubusercontent.com/JuliaDynamics/" *
     "JuliaDynamics/master/videos/agents/maze.bmp"
-model, pathfinder = initalize_model(map_url)
-
-# # Dynamics
-# Stepping the agent is a trivial matter of calling [`move_along_route!`](@ref) to move it along it's path to
-# the target.
-agent_step!(agent, model) = move_along_route!(agent, model, pathfinder)
+maze_map = load(download(map_url));
+model, pathfinder = initialize_model(maze_map)
 
 # ## Visualization
 # Visualizing the `Walker` move through the maze is handled through [`InteractiveDynamics.abmplot`](@ref).
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
 # The `heatarray` keyword argument allows plotting the maze as a heatmap behind the agent.
 abmvideo(
     "maze.mp4",
-    model,
-    agent_step!;
-    figurekwargs = (resolution=(700,700),),
+    model;
+    figurekwargs = (size =(700,700),),
     frames=60,
     framerate=30,
-    ac=:red,
-    as=11,
+    agent_color=:red,
+    agent_size=11,
     heatarray = _ -> pathfinder.walkmap,
     add_colorbar = false,
 )
-nothing # hide
 
 # ```@raw html
 # <video width="auto" controls autoplay loop>

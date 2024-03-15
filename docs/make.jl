@@ -35,12 +35,12 @@ Pkg.instantiate()
 println("Loading Packages")
 println("Documenter...")
 using Documenter
+println("AgentsExampleZoo...")
+using AgentsExampleZoo
 println("Agents...")
 using Agents
 println("Literate...")
 import Literate
-println("InteractiveDynamics...")
-using InteractiveDynamics
 
 # download the themes
 println("Theme-ing")
@@ -94,10 +94,11 @@ if !isempty(NEW_EXAMPLES)
 end
 
 makedocs(
-    modules = [Agents, InteractiveDynamics],
+    modules = [Agents, AgentsExampleZoo],
     sitename = "Agents.jl Example Zoo",
     authors = "George Datseris and contributors.",
     doctest = false,
+    warnonly = [:doctest, :missing_docs, :cross_references],
     format = Documenter.HTML(
         prettyurls = CI,
         assets = [

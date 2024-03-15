@@ -46,11 +46,9 @@
 
 using Agents
 using Random
-using InteractiveDynamics
 using CairoMakie
-CairoMakie.activate!() # hide
 
-@agent Fighter GridAgent{3} begin
+@agent struct Fighter(GridAgent{3})
     has_prisoner::Bool
     capture_time::Int
     shape::Symbol # shape of the fighter conveys what action they are currently doing
@@ -64,16 +62,17 @@ end
 
 # Now let's set up the battle field:
 function battle(; fighters = 50, seed = 6547)
-    model = ABM(
+    model = StandardABM(
         Fighter,
         GridSpace((100, 100, 10); periodic = false);
-        scheduler = Schedulers.randomly,
+        agent_step!,
+        scheduler = Schedulers.Randomly(),
         rng = Random.Xoshiro(seed),
     )
 
     n = 0
     while n != fighters
-        pos = (rand(model.rng, 1:100, 2)..., 1) # Start at level 1
+        pos = (rand(abmrng(model), 1:100, 2)..., 1) # Start at level 1
         if isempty(pos, model)
             add_agent!(pos, model, false, 0, :diamond)
             n += 1
@@ -83,9 +82,7 @@ function battle(; fighters = 50, seed = 6547)
     return model
 end
 
-model = battle()
-
-# 50 opponents positioned randomly on a 100x100 grid, with no escape
+# 50 opponents positioned Randomly() on a 100x100 grid, with no escape
 # (`periodic = false`). To leverage categorical dimensions fully, non-periodic chebyshev
 # space is necessary.
 
@@ -108,7 +105,7 @@ function closest_target(agent::Fighter, ids::Vector{Int}, model::ABM)
     if length(ids) == 1
         closest = ids[1]
     else
-        close_id = argmin(map(id -> edistance(loc(agent), loc(model[id]), model), ids))
+        close_id = argmin(map(id -> euclidean_distance(loc(agent), loc(model[id]), model), ids))
         closest = ids[close_id]
     end
     return model[closest]
@@ -121,24 +118,24 @@ end
 function battle!(one::Fighter, two::Fighter, model)
     if level(one) == level(two)
         ## Odds are equivalent
-        one_winner = rand(model.rng) < 0.5
+        one_winner = rand(abmrng(model)) < 0.5
     elseif level(one) > level(two)
         ## Odds are in favor of one
-        one_winner = 2 * rand(model.rng) > rand(model.rng)
+        one_winner = 2 * rand(abmrng(model)) > rand(abmrng(model))
     else
         ## Odds are in favor of two
-        one_winner = rand(model.rng) > 2 * rand(model.rng)
+        one_winner = rand(abmrng(model)) > 2 * rand(abmrng(model))
     end
 
     one_winner ? (up = one; down = two) : (up = two; down = one)
 
     new_lvl_up = min(level(up) + 1, 10)
     new_pos_up =
-        clamp.(rand(model.rng, -1:1, 2) .+ loc(up), [1, 1], size(model.space)[1:2])
+        clamp.(rand(abmrng(model), -1:1, 2) .+ loc(up), [1, 1], size(abmspace(model))[1:2])
     move_agent!(up, (new_pos_up..., new_lvl_up), model)
     new_lvl_down = level(down) - 1
     if new_lvl_down == 0
-        kill_agent!(down, model)
+        remove_agent!(down, model)
     else
         move_agent!(down, (loc(down)..., new_lvl_down), model)
     end
@@ -161,7 +158,7 @@ function captor_behavior!(agent, model)
             agent.shape = :rect
             gain = ceil(Int, level(prisoner) / 2)
             new_lvl = min(level(agent) + gain, 10)
-            kill_agent!(prisoner, model)
+            remove_agent!(prisoner, model)
             agent.has_prisoner = false
             move_agent!(agent, (loc(agent)..., new_lvl), model)
         end
@@ -169,7 +166,7 @@ function captor_behavior!(agent, model)
         ## Someone is here to kill the captor. Could be more than one opponent
         prisoner = [model[id] for id in close_ids if model[id].capture_time > 0][1]
         exploiter = rand(
-            model.rng,
+            abmrng(model),
             [
                 model[id]
                 for
@@ -179,13 +176,13 @@ function captor_behavior!(agent, model)
         )
         exploiter.shape = :rect
         gain = ceil(Int, level(agent) / 2)
-        new_lvl = min(level(agent) + rand(model.rng, 1:gain), 10)
-        kill_agent!(agent, model)
+        new_lvl = min(level(agent) + rand(abmrng(model), 1:gain), 10)
+        remove_agent!(agent, model)
         move_agent!(exploiter, (loc(exploiter)..., new_lvl), model)
         ## Prisoner runs away in the commotion
         prisoner.shape = :utriangle
         prisoner.capture_time = 0
-        walk!(prisoner, (rand(model.rng, -1:1, 2)..., 0), model)
+        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model)
     end
 end
 
@@ -216,16 +213,16 @@ end
 function showdown!(one::Fighter, two::Fighter, model)
     if level(one) == level(two)
         ## Odds are equivalent
-        one_winner = rand(model.rng) < 0.5
+        one_winner = rand(abmrng(model)) < 0.5
     elseif level(one) > level(two)
         ## Odds are in favor of one
-        one_winner = level(one) - level(two) * rand(model.rng) > rand(model.rng)
+        one_winner = level(one) - level(two) * rand(abmrng(model)) > rand(abmrng(model))
     else
         ## Odds are in favor of two
-        one_winner = rand(model.rng) > level(two) - level(one) * rand(model.rng)
+        one_winner = rand(abmrng(model)) > level(two) - level(one) * rand(abmrng(model))
     end
 
-    one_winner ? kill_agent!(two, model) : kill_agent!(one, model)
+    one_winner ? remove_agent!(two, model) : remove_agent!(one, model)
 end
 
 # The rest of our interactions flow down a hierarchy, so we'll place them directly in the
@@ -320,27 +317,29 @@ function agent_step!(agent, model)
     return
 end
 
+model = battle()
+
 # ## Let the Battle Begin
 # We need to write entirely custom plotting here, because we have a 3D space
 # (that would normally be plotted as 3D), but we actually only want to plot the first
 # two dimensions of the space. Thankfully, the infastructure of `ABMObservable` makes this
 # straightforward.
-abmobs = ABMObservable(model; agent_step!)
+abmobs = ABMObservable(model)
 modelobs = abmobs.model
 
 # First, we make the positions, colors and markers observables for the agents
 by_id = Schedulers.ByID()
-pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs)
+pos = lift(m -> [Point2f(m[id].pos[1], m[id].pos[2]) for id in by_id(m)], modelobs);
 ac(agent) = to_color(cgrad(:tab10)[level(agent)])
-colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs)
+colors = lift(m -> [ac(m[id]) for id in by_id(m)], modelobs);
 am(a) = a.shape
-markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs)
+markers = lift(m -> [am(m[id]) for id in by_id(m)], modelobs);
 
 # Next, we initialize an axis and plot them
-fig = Figure(resolution = (500, 600))
+fig = Figure(size = (500, 600))
 ax = Axis(fig[1,1]; title = "Battle Royale")
 scatter!(ax, pos; color = colors, marker = markers, markersize = 25)
-e = size(model.space)[1:2] .+ 2
+e = size(abmspace(model))[1:2] .+ 2
 o = zero.(e) .- 2
 xlims!(ax, o[1], e[1])
 ylims!(ax, o[2], e[2])
@@ -348,7 +347,7 @@ fig
 
 # Seems great so far! Let's add the legend
 actions = [:rect, :utriangle, :circle, :pentagon, :diamond, :vline, :hline, :star4]
-label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"]
+label_action = ["Battle", "Run", "Showdown", "Sneak", "Duel", "Captor", "Prisoner", "Chase"];
 group_action = [
     MarkerElement(
         marker = marker,
@@ -356,10 +355,10 @@ group_action = [
         strokecolor = :transparent,
         markersize = 15,
     ) for marker in actions
-]
+];
 group_level = [
     PolyElement(color = color, strokecolor = :transparent) for color in cgrad(:tab10)[1:10]
-]
+];
 
 Legend(
     fig[2, 1],
@@ -380,7 +379,7 @@ fig
 # Alright, a simple call to the `record` function can make a video of the process:
 record(fig, "battle.mp4", 1:200; framerate = 10) do i
     ax.title = "Battle Royale, step = $(i)"
-    Agents.step!(abmobs, 1)
+    step!(abmobs, 1)
 end
 
 # ```@raw html

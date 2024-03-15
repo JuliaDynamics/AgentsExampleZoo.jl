@@ -71,14 +71,14 @@
 
 # Consider the set of unoccupied positions within your vision (including the one you are
 # standing on), identify the one(s) with the greatest amount of sugar, select the nearest one
-# (randomly if there is more than one), move there and collect all the sugar in it.
+# (Randomly() if there is more than one), move there and collect all the sugar in it.
 # At this point, the agent's accumulated sugar wealth is incremented by the sugar collected
 # and decremented by the agent's metabolic rate _m_. If at this moment the agent's sugar
 # wealth is not greater than zero, then the agent dies.
 
 # #### Agent replacement rule _R_:
 
-# Whenever an agent dies it is replaced by a new agent of age 0 placed on a randomly chosen unoccupied position, having random attributes _v_, _m_ and _max-age_, and random initial wealth w0. All random numbers are drawn from uniform distributions with ranges specified in Table 1 below.
+# Whenever an agent dies it is replaced by a new agent of age 0 placed on a Randomly() chosen unoccupied position, having random attributes _v_, _m_ and _max-age_, and random initial wealth w0. All random numbers are drawn from uniform distributions with ranges specified in Table 1 below.
 
 # ### Scheduling of events
 
@@ -107,7 +107,7 @@
 
 using Agents, Random
 
-@agent SugarSeeker GridAgent{2} begin
+@agent struct SugarSeeker(GridAgent{2})
     vision::Int
     metabolic_rate::Int
     age::Int
@@ -166,36 +166,27 @@ function sugarscape(;
         :sugar_values => sugar_values,
         :sugar_capacities => sugar_capacities,
     )
-    model = AgentBasedModel(
+    model = StandardABM(
         SugarSeeker,
-        space,
-        scheduler = Schedulers.randomly,
+        space;
+        agent_step!,
+        model_step!,
+        scheduler = Schedulers.Randomly(),
         properties = properties,
         rng = MersenneTwister(seed)
     )
     for _ in 1:N
         add_agent_single!(
             model,
-            rand(model.rng, vision_dist[1]:vision_dist[2]),
-            rand(model.rng, metabolic_rate_dist[1]:metabolic_rate_dist[2]),
+            rand(abmrng(model), vision_dist[1]:vision_dist[2]),
+            rand(abmrng(model), metabolic_rate_dist[1]:metabolic_rate_dist[2]),
             0,
-            rand(model.rng, max_age_dist[1]:max_age_dist[2]),
-            rand(model.rng, w0_dist[1]:w0_dist[2]),
+            rand(abmrng(model), max_age_dist[1]:max_age_dist[2]),
+            rand(abmrng(model), w0_dist[1]:w0_dist[2]),
         )
     end
     return model
 end
-
-model = sugarscape()
-
-# Let's plot the spatial distribution of sugar capacities in the Sugarscape.
-using CairoMakie
-CairoMakie.activate!() # hide
-
-fig = Figure(resolution = (600, 600))
-ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
-Colorbar(fig[1, 2], hm, width = 20)
-fig
 
 # ## Defining stepping functions
 # Now we define the stepping functions that handle the time evolution of the model.
@@ -243,18 +234,28 @@ end
 function replacement!(agent, model)
     ## If the agent's sugar wealth become zero or less, it dies
     if agent.wealth ≤ 0 || agent.age ≥ agent.max_age
-        kill_agent!(agent, model)
+        remove_agent!(agent, model)
         ## Whenever an agent dies, a young one is added to a random empty position
         add_agent_single!(
             model,
-            rand(model.rng, model.vision_dist[1]:model.vision_dist[2]),
-            rand(model.rng, model.metabolic_rate_dist[1]:model.metabolic_rate_dist[2]),
+            rand(abmrng(model), model.vision_dist[1]:model.vision_dist[2]),
+            rand(abmrng(model), model.metabolic_rate_dist[1]:model.metabolic_rate_dist[2]),
             0,
-            rand(model.rng, model.max_age_dist[1]:model.max_age_dist[2]),
-            rand(model.rng, model.w0_dist[1]:model.w0_dist[2]),
+            rand(abmrng(model), model.max_age_dist[1]:model.max_age_dist[2]),
+            rand(abmrng(model), model.w0_dist[1]:model.w0_dist[2]),
         )
     end
 end
+
+model = sugarscape()
+
+# Let's plot the spatial distribution of sugar capacities in the Sugarscape.
+using CairoMakie
+
+fig = Figure(size = (600, 600))
+ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
+Colorbar(fig[1, 2], hm, width = 20)
+fig
 
 # ## Plotting & Animating
 
@@ -262,13 +263,9 @@ end
 # and standard Makie.jl commands like lifting the model observable.
 # (we could plot the sugar distribution as a heatmap, but we choose this composite
 # plot for more variaty in the example pool)
-using InteractiveDynamics
 
 model = sugarscape()
-fig, ax, abmp = abmplot(model;
-    agent_step!, model_step!, add_controls = false,
-    figkwargs = (resolution = (800, 600))
-)
+fig, ax, abmp = abmplot(model; add_controls = false, figkwargs = (size = (800, 600)))
 ## Lift model observable for heatmap
 sugar = @lift($(abmp.model).sugar_values)
 axhm, hm = heatmap(fig[1,2], sugar; colormap=:thermal, colorrange=(0,4))
@@ -305,20 +302,20 @@ end
 # ## Distribution of wealth across individuals
 # First we produce some data that include the wealth
 model2 = sugarscape()
-adata, _ = run!(model2, agent_step!, model_step!, 100, adata = [:wealth])
+adata, _ = run!(model2, 100, adata = [:wealth])
 adata[1:10,:]
 
 # And now we animate the evolution of the distribution of wealth
-figure = Figure(resolution = (600, 600))
+figure = Figure(size = (600, 600))
 step_number = Observable(0)
 title_text = @lift("Wealth distribution of individuals, step = $($step_number)")
-Label(figure[1, 1], title_text; textsize=20, tellwidth=false)
+Label(figure[1, 1], title_text; fontsize=20, tellwidth=false)
 ax = Axis(figure[2, 1]; xlabel="Wealth", ylabel="Number of agents")
-histdata = Observable(adata[adata.step .== 20, :wealth])
-hist!(ax, histdata; bar_position=:step)
+histdata = Observable(adata[adata.time .== 20, :wealth])
+hist!(ax, histdata; bar_position=:time)
 ylims!(ax, (0, 50))
 record(figure, "sugarhist.mp4", 0:50; framerate=3) do i
-    histdata[] = adata[adata.step .== i, :wealth]
+    histdata[] = adata[adata.time .== i, :wealth]
     step_number[] = i
     xlims!(ax, (0, max(histdata[]...)))
 end
