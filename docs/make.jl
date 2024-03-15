@@ -7,11 +7,11 @@ NEW_EXAMPLES = [
 EXISTING_EXAMPLES = [
     # The following are sorted ALPHABETICALLY
     # according to their title in their example file!
-    # "growing_bacteria.jl",
     "ants.jl",
     "battle.jl",
     "social_distancing.jl",
     "game_of_life_2D_CA.jl",
+    "growing_bacteria.jl",
     "daisyworld.jl",
     "forest_fire.jl",
     "fractal_growth.jl",
