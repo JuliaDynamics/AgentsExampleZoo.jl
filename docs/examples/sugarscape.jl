@@ -311,11 +311,11 @@ step_number = Observable(0)
 title_text = @lift("Wealth distribution of individuals, step = $($step_number)")
 Label(figure[1, 1], title_text; fontsize=20, tellwidth=false)
 ax = Axis(figure[2, 1]; xlabel="Wealth", ylabel="Number of agents")
-histdata = Observable(adata[adata.step .== 20, :wealth])
-hist!(ax, histdata; bar_position=:step)
+histdata = Observable(adata[adata.time .== 20, :wealth])
+hist!(ax, histdata; bar_position=:time)
 ylims!(ax, (0, 50))
 record(figure, "sugarhist.mp4", 0:50; framerate=3) do i
-    histdata[] = adata[adata.step .== i, :wealth]
+    histdata[] = adata[adata.time .== i, :wealth]
     step_number[] = i
     xlims!(ax, (0, max(histdata[]...)))
 end

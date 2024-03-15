@@ -262,8 +262,8 @@ model = daisyworld(; solar_luminosity = 1.0)
 agent_df, model_df = run!(model, 1000; adata)
 figure = Figure(size = (600, 400));
 ax = figure[1, 1] = Axis(figure, xlabel = "tick", ylabel = "daisy count")
-blackl = lines!(ax, agent_df[!, :step], agent_df[!, :count_black], color = :black)
-whitel = lines!(ax, agent_df[!, :step], agent_df[!, :count_white], color = :orange)
+blackl = lines!(ax, agent_df[!, :time], agent_df[!, :count_black], color = :black)
+whitel = lines!(ax, agent_df[!, :time], agent_df[!, :count_white], color = :orange)
 Legend(figure[1, 2], [blackl, whitel], ["black", "white"], labelsize = 12)
 figure
 
@@ -283,13 +283,13 @@ agent_df, model_df = run!(model, 1000; adata = adata, mdata = mdata)
 
 figure = CairoMakie.Figure(size = (600, 600));
 ax1 = figure[1, 1] = Axis(figure, ylabel = "daisy count")
-blackl = lines!(ax1, agent_df[!, :step], agent_df[!, :count_black], color = :red)
-whitel = lines!(ax1, agent_df[!, :step], agent_df[!, :count_white], color = :blue)
+blackl = lines!(ax1, agent_df[!, :time], agent_df[!, :count_black], color = :red)
+whitel = lines!(ax1, agent_df[!, :time], agent_df[!, :count_white], color = :blue)
 figure[1, 2] = Legend(figure, [blackl, whitel], ["black", "white"])
 
 ax2 = figure[2, 1] = Axis(figure, ylabel = "temperature")
 ax3 = figure[3, 1] = Axis(figure, xlabel = "tick", ylabel = "L")
-lines!(ax2, model_df[!, :step], model_df[!, :temperature], color = :red)
-lines!(ax3, model_df[!, :step], model_df[!, :solar_luminosity], color = :red)
+lines!(ax2, model_df[!, :time], model_df[!, :temperature], color = :red)
+lines!(ax3, model_df[!, :time], model_df[!, :solar_luminosity], color = :red)
 for ax in (ax1, ax2); ax.xticklabelsvisible = false; end
 figure

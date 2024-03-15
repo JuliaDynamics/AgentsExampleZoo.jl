@@ -60,7 +60,7 @@ data[(end-20):end, :]
 # What we mostly care about is the distribution of wealth,
 # which we can obtain for example by doing the following query:
 
-wealths = filter(x -> x.step == N - 1, data)[!, :wealth]
+wealths = filter(x -> x.time == N - 1, data)[!, :wealth]
 
 # and then we can make a histogram of the result.
 # With a simple visualization we immediately see the power-law distribution:
@@ -127,7 +127,7 @@ data[(end-20):end, :]
 
 function wealth_distr(data, model, n)
     W = zeros(Int, size(abmspace(model)))
-    for row in eachrow(filter(r -> r.step == n, data)) # iterate over rows at a specific step
+    for row in eachrow(filter(r -> r.time == n, data)) # iterate over rows at a specific step
         W[row.pos...] += row.wealth
     end
     return W

@@ -137,7 +137,7 @@ using DataFrames, CairoMakie
 const cmap = cgrad(:lightrainbow)
 plotsim(ax, data) =
     for grp in groupby(data, :id)
-        lines!(ax, grp.step, grp.new_opinion, color = cmap[grp.id[1]/100])
+        lines!(ax, grp.time, grp.new_opinion, color = cmap[grp.id[1]/100])
     end
 
 eps = [0.05, 0.15, 0.3]
