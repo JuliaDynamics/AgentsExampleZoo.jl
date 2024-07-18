@@ -56,6 +56,6 @@ function tax_agent!(agent)
 end
 
 model = taxsystem()
-# with 1 thread  -> 1.626854 seconds (4.43 M allocations: 70.526 MiB, 2.11% gc time, 5.07% compilation time)
-# with 6 threads -> 0.475760 seconds (4.42 M allocations: 70.664 MiB, 17.65% gc time, 51.11% compilation time)
+# run the example with a different number of threads to see the speed-up, on the tested machine
+# the model with 6 threads was 3.4 times faster than with 1 thread
 @time step!(model, 100)
