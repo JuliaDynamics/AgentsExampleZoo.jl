@@ -20,6 +20,7 @@ EXISTING_EXAMPLES = [
     "runners.jl",
     "opinion_spread.jl",
     "sugarscape.jl",
+    "taxsystem.jl",
     "wealth_distribution.jl",
     "wright-fisher.jl",
 ]
