@@ -27,7 +27,7 @@ end
 
 # Here we create the model, which contains a certain number of agents with a random
 # age and a random wage each. The accumulated wealth at the start of the simulation is
-# 0.
+# zero.
 function taxsystem(; nagents = 100000)
     model = StandardABM(Payer; model_step!, container = Vector, rng = Xoshiro(42))
     for _ in 1:nagents
@@ -55,7 +55,9 @@ function tax_agent!(agent)
     agent.alive = rand(abmrng(model)) < 0.02 ? false : true
 end
 
+# 
 model = taxsystem()
-# run the example with a different number of threads to see the speed-up, on the tested machine
+
+# Run the example with a different number of threads to see the speed-up, on the tested machine
 # the model with 6 threads was 3.4 times faster than with 1 thread
-@time step!(model, 100)
+@time step!(model, 100);
