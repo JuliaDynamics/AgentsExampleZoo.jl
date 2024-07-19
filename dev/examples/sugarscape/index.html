@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sugarscape · Agents.jl Example Zoo</title><meta name="title" content="Sugarscape · Agents.jl Example Zoo"/><meta property="og:title" content="Sugarscape · Agents.jl Example Zoo"/><meta property="twitter:title" content="Sugarscape · Agents.jl Example Zoo"/><meta name="description" content="Documentation for Agents.jl Example Zoo."/><meta property="og:description" content="Documentation for Agents.jl Example Zoo."/><meta property="twitter:description" content="Documentation for Agents.jl Example Zoo."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Agents.jl Example Zoo logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Agents.jl Example Zoo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../ants/">Ants</a></li><li><a class="tocitem" href="../battle/">Battle Royale</a></li><li><a class="tocitem" href="../social_distancing/">Continuous space social distancing</a></li><li><a class="tocitem" href="../game_of_life_2D_CA/">Conway&#39;s game of life</a></li><li><a class="tocitem" href="../growing_bacteria/">Bacterial Growth</a></li><li><a class="tocitem" href="../daisyworld/">Daisyworld</a></li><li><a class="tocitem" href="../forest_fire/">Forest fire</a></li><li><a class="tocitem" href="../fractal_growth/">Fractal Growth</a></li><li><a class="tocitem" href="../hk/">Hegselmann-Krause opinion dynamics</a></li><li><a class="tocitem" href="../maze/">Maze Solver</a></li><li><a class="tocitem" href="../runners/">Mountain Runners</a></li><li><a class="tocitem" href="../opinion_spread/">Opinion spread</a></li><li class="is-active"><a class="tocitem" href>Sugarscape</a><ul class="internal"><li><a class="tocitem" href="#Rules-of-sugarscape"><span>Rules of sugarscape</span></a></li><li><a class="tocitem" href="#Creating-the-ABM"><span>Creating the ABM</span></a></li><li><a class="tocitem" href="#Defining-stepping-functions"><span>Defining stepping functions</span></a></li><li><a class="tocitem" href="#Plotting-and-Animating"><span>Plotting &amp; Animating</span></a></li><li><a class="tocitem" href="#Distribution-of-wealth-across-individuals"><span>Distribution of wealth across individuals</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li><li><a class="tocitem" href="../wealth_distribution/">Wealth distribution model</a></li><li><a class="tocitem" href="../wright-fisher/">Wright-Fisher model of evolution</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Sugarscape</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Sugarscape</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl/blob/main/docs/examples/sugarscape.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Sugarscape"><a class="docs-heading-anchor" href="#Sugarscape">Sugarscape</a><a id="Sugarscape-1"></a><a class="docs-heading-anchor-permalink" href="#Sugarscape" title="Permalink"></a></h1><p><strong>Growing Artificial Societies</strong></p><video width="auto" controls autoplay loop>
+<source src="../sugarvis.mp4" type="video/mp4">
+</video><p>(Descriptions below are from <a href="http://jasss.soc.surrey.ac.uk/12/1/6/appendixB/EpsteinAxtell1996.html">this page</a>)</p><hr/><p>&quot;Growing Artificial Societies&quot; (Epstein &amp; Axtell 1996) is a reference book for scientists interested in agent-based modelling and computer simulation. It represents one of the most paradigmatic and fascinating examples of the so-called generative approach to social science (Epstein 1999). In their book, Epstein &amp; Axtell (1996) present a computational model where a heterogeneous population of autonomous agents compete for renewable resources that are unequally distributed over a 2-dimensional environment. Agents in the model are autonomous in that they are not governed by any central authority and they are heterogeneous in that they differ in their genetic attributes and their initial environmental endowments (e.g. their initial location and wealth). The model grows in complexity through the different chapters of the book as the agents are given the ability to engage in new activities such as sex, cultural exchange, trade, combat, disease transmission, etc. The core of Sugarscape has provided the basis for various extensions to study e.g. norm formation through cultural diffusion (Flentge et al. 2001) and the emergence of communication and cooperation in artificial societies (Buzing et al. 2005). Here we analyse the model described in the second chapter of Epstein &amp; Axtell&#39;s (1996) book within the Markov chain framework.</p><h2 id="Rules-of-sugarscape"><a class="docs-heading-anchor" href="#Rules-of-sugarscape">Rules of sugarscape</a><a id="Rules-of-sugarscape-1"></a><a class="docs-heading-anchor-permalink" href="#Rules-of-sugarscape" title="Permalink"></a></h2><p>The first model that Epstein &amp; Axtell (1996) present comprises a finite population of agents who live in an environment. The environment is represented by a two-dimensional grid which contains sugar in some of its cells, hence the name Sugarscape. Agents&#39; role in this first model consists in wandering around the Sugarscape harvesting the greatest amount of sugar they can find.</p><h3 id="Environment"><a class="docs-heading-anchor" href="#Environment">Environment</a><a id="Environment-1"></a><a class="docs-heading-anchor-permalink" href="#Environment" title="Permalink"></a></h3><p>The environment is a 50×50 grid that wraps around forming a torus. Grid positions have both a sugar level and a sugar capacity c. A cell&#39;s sugar level is the number of units of sugar in the cell (potentially none), and its sugar capacity c is the maximum value the sugar level can take on that cell. Sugar capacity is fixed for each individual cell and may be different for different cells. The spatial distribution of sugar capacities depicts a sugar topography consisting of two peaks (with sugar capacity c = 4) separated by a valley, and surrounded by a desert region of sugarless cells (see Figure 1). Note, however, that the grid wraps around in both directions.</p><p>The Sugarscape obbeys the following rule:</p><p>Sugarscape growback rule G<span>$\alpha$</span>: At each position, sugar grows back at a rate of <span>$\alpha$</span> units per time-step up to the cell&#39;s capacity c.</p><h3 id="Agents"><a class="docs-heading-anchor" href="#Agents">Agents</a><a id="Agents-1"></a><a class="docs-heading-anchor-permalink" href="#Agents" title="Permalink"></a></h3><p>Every agent is endowed with individual (life-long) characteristics that condition her skills and capacities to survive in the Sugarscape. These individual attributes are:</p><ul><li>A vision <em>v</em>, which is the maximum number of positions the agent can see in each of</li></ul><p>the four principal lattice directions: north, south, east and west.</p><ul><li>A metabolic rate <em>m</em>, which represents the units of sugar the agent burns per time-step.</li><li>A maximum age <em>max-age</em>, which is the maximum number of time-steps the agent can live.</li></ul><p>Agents also have the capacity to accumulate sugar wealth <em>w</em>. An agent&#39;s sugar wealth is incremented at the end of each time-step by the sugar collected and decremented by the agent&#39;s metabolic rate. <strong>Two agents are not allowed to occupy the same position in the grid.</strong></p><p>The agents&#39; behaviour is determined by the following two rules:</p><h4 id="Agent-movement-rule-*M*:"><a class="docs-heading-anchor" href="#Agent-movement-rule-*M*:">Agent movement rule <em>M</em>:</a><a id="Agent-movement-rule-*M*:-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-movement-rule-*M*:" title="Permalink"></a></h4><p>Consider the set of unoccupied positions within your vision (including the one you are standing on), identify the one(s) with the greatest amount of sugar, select the nearest one (Randomly() if there is more than one), move there and collect all the sugar in it. At this point, the agent&#39;s accumulated sugar wealth is incremented by the sugar collected and decremented by the agent&#39;s metabolic rate <em>m</em>. If at this moment the agent&#39;s sugar wealth is not greater than zero, then the agent dies.</p><h4 id="Agent-replacement-rule-*R*:"><a class="docs-heading-anchor" href="#Agent-replacement-rule-*R*:">Agent replacement rule <em>R</em>:</a><a id="Agent-replacement-rule-*R*:-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-replacement-rule-*R*:" title="Permalink"></a></h4><p>Whenever an agent dies it is replaced by a new agent of age 0 placed on a Randomly() chosen unoccupied position, having random attributes <em>v</em>, <em>m</em> and <em>max-age</em>, and random initial wealth w0. All random numbers are drawn from uniform distributions with ranges specified in Table 1 below.</p><h3 id="Scheduling-of-events"><a class="docs-heading-anchor" href="#Scheduling-of-events">Scheduling of events</a><a id="Scheduling-of-events-1"></a><a class="docs-heading-anchor-permalink" href="#Scheduling-of-events" title="Permalink"></a></h3><p>Scheduling is determined by the order in which the different rules <em>G</em>, <em>M</em> and <em>R</em> are fired in the model. Environmental rule <em>G</em> comes first, followed by agent rule <em>M</em> (which is executed by all agents in random order) and finally agent rule <em>R</em> is executed (again, by all agents in random order).</p><h3 id="Parameterisation"><a class="docs-heading-anchor" href="#Parameterisation">Parameterisation</a><a id="Parameterisation-1"></a><a class="docs-heading-anchor-permalink" href="#Parameterisation" title="Permalink"></a></h3><p>Our analysis corresponds to a model used by Epstein &amp; Axtell (1996, pg. 33) to study the emergent wealth distribution in the agent population. This model is parameterised as indicated in Table 1 below (where U[a,b] denotes a uniform distribution with range [a,b]).</p><p>Initially, each position of the Sugarscape contains a sugar level equal to its sugar capacity c, and the 250 agents are created at a random unoccupied initial location and with random attributes (using the uniform distributions indicated in Table 1).</p><p><strong>Table 1</strong></p><table><tr><th style="text-align: right">Parameter</th><th style="text-align: right">Value</th></tr><tr><td style="text-align: right">Lattice length L</td><td style="text-align: right">50</td></tr><tr><td style="text-align: right">Number of sugar peaks</td><td style="text-align: right">2</td></tr><tr><td style="text-align: right">Growth rate <span>$\alpha$</span></td><td style="text-align: right">1</td></tr><tr><td style="text-align: right">Number of agents N</td><td style="text-align: right">250</td></tr><tr><td style="text-align: right">Agents&#39; initial wealth w0 distribution</td><td style="text-align: right">U[5,25]</td></tr><tr><td style="text-align: right">Agents&#39; metabolic rate m distribution</td><td style="text-align: right">U[1,4]</td></tr><tr><td style="text-align: right">Agents&#39; vision v distribution</td><td style="text-align: right">U[1,6]</td></tr><tr><td style="text-align: right">Agents&#39; maximum age max-age distribution</td><td style="text-align: right">U[60,100]</td></tr></table><h2 id="Creating-the-ABM"><a class="docs-heading-anchor" href="#Creating-the-ABM">Creating the ABM</a><a id="Creating-the-ABM-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-the-ABM" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Agents, Random
+
+@agent struct SugarSeeker(GridAgent{2})
+    vision::Int
+    metabolic_rate::Int
+    age::Int
+    max_age::Int
+    wealth::Int
+end</code></pre><p>Functions <code>distances</code> and <code>sugar_caps</code> produce a matrix for the distribution of sugar capacities.</p><pre><code class="language-julia hljs">function distances(pos, sugar_peaks)
+    all_dists = zeros(Int, length(sugar_peaks))
+    for (ind, peak) in enumerate(sugar_peaks)
+        d = round(Int, sqrt(sum((pos .- peak) .^ 2)))
+        all_dists[ind] = d
+    end
+    return minimum(all_dists)
+end
+
+function sugar_caps(dims, sugar_peaks, max_sugar, dia = 4)
+    sugar_capacities = zeros(Int, dims)
+    for i in 1:dims[1], j in 1:dims[2]
+        sugar_capacities[i, j] = distances((i, j), sugar_peaks)
+    end
+    for i in 1:dims[1]
+        for j in 1:dims[2]
+            sugar_capacities[i, j] = max(0, max_sugar - (sugar_capacities[i, j] ÷ dia))
+        end
+    end
+    return sugar_capacities
+end
+
+&quot;Create a sugarscape ABM&quot;
+function sugarscape(;
+    dims = (50, 50),
+    sugar_peaks = ((10, 40), (40, 10)),
+    growth_rate = 1,
+    N = 250,
+    w0_dist = (5, 25),
+    metabolic_rate_dist = (1, 4),
+    vision_dist = (1, 6),
+    max_age_dist = (60, 100),
+    max_sugar = 4,
+    seed = 42
+)
+    sugar_capacities = sugar_caps(dims, sugar_peaks, max_sugar, 6)
+    sugar_values = deepcopy(sugar_capacities)
+    space = GridSpaceSingle(dims)
+    properties = Dict(
+        :growth_rate =&gt; growth_rate,
+        :N =&gt; N,
+        :w0_dist =&gt; w0_dist,
+        :metabolic_rate_dist =&gt; metabolic_rate_dist,
+        :vision_dist =&gt; vision_dist,
+        :max_age_dist =&gt; max_age_dist,
+        :sugar_values =&gt; sugar_values,
+        :sugar_capacities =&gt; sugar_capacities,
+    )
+    model = StandardABM(
+        SugarSeeker,
+        space;
+        agent_step!,
+        model_step!,
+        scheduler = Schedulers.Randomly(),
+        properties = properties,
+        rng = MersenneTwister(seed)
+    )
+    for _ in 1:N
+        add_agent_single!(
+            model,
+            rand(abmrng(model), vision_dist[1]:vision_dist[2]),
+            rand(abmrng(model), metabolic_rate_dist[1]:metabolic_rate_dist[2]),
+            0,
+            rand(abmrng(model), max_age_dist[1]:max_age_dist[2]),
+            rand(abmrng(model), w0_dist[1]:w0_dist[2]),
+        )
+    end
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.sugarscape</code></pre><h2 id="Defining-stepping-functions"><a class="docs-heading-anchor" href="#Defining-stepping-functions">Defining stepping functions</a><a id="Defining-stepping-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-stepping-functions" title="Permalink"></a></h2><p>Now we define the stepping functions that handle the time evolution of the model. The model stepping function controls the sugar growth:</p><pre><code class="language-julia hljs">function model_step!(model)
+    # At each position, sugar grows back at a rate of α units
+    # per time-step up to the cell&#39;s capacity c.
+    @inbounds for pos in positions(model)
+        if model.sugar_values[pos...] &lt; model.sugar_capacities[pos...]
+            model.sugar_values[pos...] += model.growth_rate
+        end
+    end
+    return
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">model_step! (generic function with 1 method)</code></pre><p>The agent stepping function contains the dynamics of the model:</p><pre><code class="language-julia hljs">function agent_step!(agent, model)
+    move_and_collect!(agent, model)
+    replacement!(agent, model)
+end
+
+function move_and_collect!(agent, model)
+    # Go through all unoccupied positions within vision, and consider the empty ones.
+    # From those, identify the one with greatest amount of sugar, and go there!
+    max_sugar_pos = agent.pos
+    max_sugar = model.sugar_values[max_sugar_pos...]
+    for pos in nearby_positions(agent, model, agent.vision)
+        isempty(pos, model) || continue
+        sugar = model.sugar_values[pos...]
+        if sugar &gt; max_sugar
+            max_sugar = sugar
+            max_sugar_pos = pos
+        end
+    end
+    # Move to the max sugar position (which could be where we are already)
+    move_agent!(agent, max_sugar_pos, model)
+    # Collect the sugar there and update wealth (collected - consumed)
+    agent.wealth += (model.sugar_values[max_sugar_pos...] - agent.metabolic_rate)
+    model.sugar_values[max_sugar_pos...] = 0
+    # age
+    agent.age += 1
+    return
+end
+
+function replacement!(agent, model)
+    # If the agent&#39;s sugar wealth become zero or less, it dies
+    if agent.wealth ≤ 0 || agent.age ≥ agent.max_age
+        remove_agent!(agent, model)
+        # Whenever an agent dies, a young one is added to a random empty position
+        add_agent_single!(
+            model,
+            rand(abmrng(model), model.vision_dist[1]:model.vision_dist[2]),
+            rand(abmrng(model), model.metabolic_rate_dist[1]:model.metabolic_rate_dist[2]),
+            0,
+            rand(abmrng(model), model.max_age_dist[1]:model.max_age_dist[2]),
+            rand(abmrng(model), model.w0_dist[1]:model.w0_dist[2]),
+        )
+    end
+end
+
+model = sugarscape()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StandardABM with 250 agents of type SugarSeeker
+ agents container: Dict
+ space: GridSpaceSingle with size (50, 50), metric=chebyshev, periodic=true
+ scheduler: Agents.Schedulers.Randomly
+ properties: growth_rate, N, max_age_dist, metabolic_rate_dist, vision_dist, sugar_values, sugar_capacities, w0_dist</code></pre><p>Let&#39;s plot the spatial distribution of sugar capacities in the Sugarscape.</p><pre><code class="language-julia hljs">using CairoMakie
+
+fig = Figure(size = (600, 600))
+ax, hm = heatmap(fig[1,1], model.sugar_capacities; colormap=:thermal)
+Colorbar(fig[1, 2], hm, width = 20)
+fig</code></pre><img src="dea60685.png" alt="Example block output"/><h2 id="Plotting-and-Animating"><a class="docs-heading-anchor" href="#Plotting-and-Animating">Plotting &amp; Animating</a><a id="Plotting-and-Animating-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-and-Animating" title="Permalink"></a></h2><p>We can plot the ABM and the sugar distribution side by side using <a href="@ref"><code>abmplot</code></a> and standard Makie.jl commands like lifting the model observable. (we could plot the sugar distribution as a heatmap, but we choose this composite plot for more variaty in the example pool)</p><pre><code class="language-julia hljs">model = sugarscape()
+fig, ax, abmp = abmplot(model; add_controls = false, figkwargs = (size = (800, 600)))
+# Lift model observable for heatmap
+sugar = @lift($(abmp.model).sugar_values)
+axhm, hm = heatmap(fig[1,2], sugar; colormap=:thermal, colorrange=(0,4))
+axhm.aspect = AxisAspect(1) # equal aspect ratio for heatmap
+Colorbar(fig[1, 3], hm, width = 15, tellheight=false)
+rowsize!(fig.layout, 1, axhm.scene.px_area[].widths[2]) # Colorbar height = axis height
+fig</code></pre><img src="f8999ead.png" alt="Example block output"/><p>Animating this is now trivial. We simply step the model observable in <code>abmp</code>. We&#39;ll also add a title that counts the step number</p><pre><code class="language-julia hljs">s = Observable(0) # counter of current step, also observable
+t = @lift(&quot;Sugarscape, step = $($(s))&quot;)
+connect!(ax.title, t)
+ax.titlealign = :left
+fig</code></pre><img src="a64997ec.png" alt="Example block output"/><p>We animate the evolution of both the ABM and the sugar distribution using the following simple loop involving the abmstepper</p><pre><code class="language-julia hljs">record(fig, &quot;sugarvis.mp4&quot;, 0:100; framerate = 3) do j
+    # This updates the abm plot and lifted heatmap
+    Agents.step!(abmp, 1)
+    # This updates the title counter
+    s[] = s[] + 1
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;sugarvis.mp4&quot;</code></pre><video width="auto" controls autoplay loop>
+<source src="../sugarvis.mp4" type="video/mp4">
+</video><h2 id="Distribution-of-wealth-across-individuals"><a class="docs-heading-anchor" href="#Distribution-of-wealth-across-individuals">Distribution of wealth across individuals</a><a id="Distribution-of-wealth-across-individuals-1"></a><a class="docs-heading-anchor-permalink" href="#Distribution-of-wealth-across-individuals" title="Permalink"></a></h2><p>First we produce some data that include the wealth</p><pre><code class="language-julia hljs">model2 = sugarscape()
+adata, _ = run!(model2, 100, adata = [:wealth])
+adata[1:10,:]</code></pre><div><div style = "float: left;"><span>10×3 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "header"><th class = "rowNumber" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">time</th><th style = "text-align: left;">id</th><th style = "text-align: left;">wealth</th></tr><tr class = "subheader headerLastRow"><th class = "rowNumber" style = "font-weight: bold; text-align: right;"></th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th></tr></thead><tbody><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: right;">0</td><td style = "text-align: right;">1</td><td style = "text-align: right;">9</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: right;">0</td><td style = "text-align: right;">2</td><td style = "text-align: right;">25</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: right;">0</td><td style = "text-align: right;">3</td><td style = "text-align: right;">14</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: right;">0</td><td style = "text-align: right;">4</td><td style = "text-align: right;">23</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: right;">0</td><td style = "text-align: right;">5</td><td style = "text-align: right;">13</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: right;">0</td><td style = "text-align: right;">6</td><td style = "text-align: right;">15</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: right;">0</td><td style = "text-align: right;">7</td><td style = "text-align: right;">15</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: right;">0</td><td style = "text-align: right;">8</td><td style = "text-align: right;">19</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: right;">0</td><td style = "text-align: right;">9</td><td style = "text-align: right;">9</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">10</td><td style = "text-align: right;">0</td><td style = "text-align: right;">10</td><td style = "text-align: right;">17</td></tr></tbody></table></div><p>And now we animate the evolution of the distribution of wealth</p><pre><code class="language-julia hljs">figure = Figure(size = (600, 600))
+step_number = Observable(0)
+title_text = @lift(&quot;Wealth distribution of individuals, step = $($step_number)&quot;)
+Label(figure[1, 1], title_text; fontsize=20, tellwidth=false)
+ax = Axis(figure[2, 1]; xlabel=&quot;Wealth&quot;, ylabel=&quot;Number of agents&quot;)
+histdata = Observable(adata[adata.time .== 20, :wealth])
+hist!(ax, histdata; bar_position=:time)
+ylims!(ax, (0, 50))
+record(figure, &quot;sugarhist.mp4&quot;, 0:50; framerate=3) do i
+    histdata[] = adata[adata.time .== i, :wealth]
+    step_number[] = i
+    xlims!(ax, (0, max(histdata[]...)))
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;sugarhist.mp4&quot;</code></pre><p>We see that the distribution of wealth shifts from a more or less uniform distribution to a skewed distribution resembling a power-law.</p><video width="auto" controls autoplay loop>
+<source src="../sugarhist.mp4" type="video/mp4">
+</video><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>BUZING P, Eiben A &amp; Schut M (2005) Emerging communication and cooperation in evolving agent societies. Journal of Artificial Societies and Social Simulation 8(1)2. http://jasss.soc.surrey.ac.uk/8/1/2.html.</p><p>EPSTEIN J M (1999) Agent-Based Computational Models And Generative Social Science. Complexity 4(5), pp. 41-60.</p><p>EPSTEIN J M &amp; Axtell R L (1996) Growing Artificial Societies: Social Science from the Bottom Up. The MIT Press.</p><p>FLENTGE F, Polani D &amp; Uthmann T (2001) Modelling the emergence of possession norms using memes. Journal of Artificial Societies and Social Simulation 4(4)3. http://jasss.soc.surrey.ac.uk/4/4/3.html.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../opinion_spread/">« Opinion spread</a><a class="docs-footer-nextpage" href="../wealth_distribution/">Wealth distribution model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Friday 15 March 2024 18:31">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

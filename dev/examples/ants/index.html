@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Ants · Agents.jl Example Zoo</title><meta name="title" content="Ants · Agents.jl Example Zoo"/><meta property="og:title" content="Ants · Agents.jl Example Zoo"/><meta property="twitter:title" content="Ants · Agents.jl Example Zoo"/><meta name="description" content="Documentation for Agents.jl Example Zoo."/><meta property="og:description" content="Documentation for Agents.jl Example Zoo."/><meta property="twitter:description" content="Documentation for Agents.jl Example Zoo."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Agents.jl Example Zoo logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Agents.jl Example Zoo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Ants</a><ul class="internal"><li><a class="tocitem" href="#Overview-of-Ants"><span>Overview of Ants</span></a></li><li><a class="tocitem" href="#Defining-the-ant-type"><span>Defining the ant type</span></a></li><li><a class="tocitem" href="#Model-Properties"><span>Model Properties</span></a></li><li><a class="tocitem" href="#Initialize-Model"><span>Initialize Model</span></a></li><li><a class="tocitem" href="#Support-Methods"><span>Support Methods</span></a></li><li><a class="tocitem" href="#Agent-Step"><span>Agent Step</span></a></li><li><a class="tocitem" href="#Model-Step"><span>Model Step</span></a></li><li><a class="tocitem" href="#Displaying-and-Running"><span>Displaying and Running</span></a></li></ul></li><li><a class="tocitem" href="../battle/">Battle Royale</a></li><li><a class="tocitem" href="../social_distancing/">Continuous space social distancing</a></li><li><a class="tocitem" href="../game_of_life_2D_CA/">Conway&#39;s game of life</a></li><li><a class="tocitem" href="../growing_bacteria/">Bacterial Growth</a></li><li><a class="tocitem" href="../daisyworld/">Daisyworld</a></li><li><a class="tocitem" href="../forest_fire/">Forest fire</a></li><li><a class="tocitem" href="../fractal_growth/">Fractal Growth</a></li><li><a class="tocitem" href="../hk/">Hegselmann-Krause opinion dynamics</a></li><li><a class="tocitem" href="../maze/">Maze Solver</a></li><li><a class="tocitem" href="../runners/">Mountain Runners</a></li><li><a class="tocitem" href="../opinion_spread/">Opinion spread</a></li><li><a class="tocitem" href="../sugarscape/">Sugarscape</a></li><li><a class="tocitem" href="../wealth_distribution/">Wealth distribution model</a></li><li><a class="tocitem" href="../wright-fisher/">Wright-Fisher model of evolution</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Ants</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Ants</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl/blob/main/docs/examples/ants.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Ants"><a class="docs-heading-anchor" href="#Ants">Ants</a><a id="Ants-1"></a><a class="docs-heading-anchor-permalink" href="#Ants" title="Permalink"></a></h1><video width="auto" controls autoplay loop>
+<source src="../antworld.mp4" type="video/mp4">
+</video><p>Study this example to learn about:</p><ul><li>Simple agent properties with complex model interactions</li><li>Diffusion of a quantity in a grid space</li><li>Including a &quot;surface property&quot; in the model</li><li>Counting time in the model and having time-dependent dynamics</li><li>Performing interactive scientific research</li></ul><h2 id="Overview-of-Ants"><a class="docs-heading-anchor" href="#Overview-of-Ants">Overview of Ants</a><a id="Overview-of-Ants-1"></a><a class="docs-heading-anchor-permalink" href="#Overview-of-Ants" title="Permalink"></a></h2><p>This model explores the behavior of ant colonies in collecting food and communicating using chemicals that individual ants leave in the world.</p><p>AntWorld has one nest and three sources of food at varying distances from the nest. Each ant has the tendency to keep moving in the direction they are currently facing, with some randomness. They will follow pheromone trails to food. This pheromone trail dissipates (spreads) to surrounding areas. It also evaporates over time.</p><p>In addition, they have a chemical trail to follow back to the nest. This trail is static.</p><p>Ants set out from the nest in a random manner, seeking out sources of food. When they find food, they pick up one unit of it, turn around, and head back to the nest while depositing pheromones for other ants to find and follow back to the food.</p><h2 id="Defining-the-ant-type"><a class="docs-heading-anchor" href="#Defining-the-ant-type">Defining the ant type</a><a id="Defining-the-ant-type-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-the-ant-type" title="Permalink"></a></h2><p><code>Ant</code> has three values (other than the required <code>id</code> and <code>pos</code> for any agent that lives on a <a href="@ref"><code>GridSpaceSingle</code></a>). Each ant has a <code>has_food</code> attribute, showing if the ant is currently carrying food, a <code>facing_direction</code> (a number between 1 and 8) describing the direction they are heading, and a <code>food_collected</code> which is the amount of food an individual ant has collected.</p><pre><code class="language-julia hljs">using Agents
+using Random
+using Logging
+
+@agent struct Ant(GridAgent{2})
+    has_food::Bool
+    facing_direction::Int
+    food_collected::Int
+    food_collected_once::Bool
+end</code></pre><p><code>adjacent_dict</code> defines the adjacent positions to the current position, and is also associated with the direction the ant is facing.</p><pre><code class="language-julia hljs">const adjacent_dict = Dict(
+    1 =&gt; (0, -1), # S
+    2 =&gt; (1, -1), # SE
+    3 =&gt; (1, 0), # E
+    4 =&gt; (1, 1), # NE
+    5 =&gt; (0, 1), # N
+    6 =&gt; (-1, 1), # NW
+    7 =&gt; (-1, 0), # W
+    8 =&gt; (-1, -1), # SW
+    )
+
+const number_directions = length(adjacent_dict)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8</code></pre><h2 id="Model-Properties"><a class="docs-heading-anchor" href="#Model-Properties">Model Properties</a><a id="Model-Properties-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Properties" title="Permalink"></a></h2><p>The <code>AntWorldProperties</code> structure defines the properties of the model.</p><pre><code class="language-julia hljs">mutable struct AntWorldProperties
+    pheromone_trails::Matrix
+    food_amounts::Matrix
+    nest_locations::Matrix
+    food_source_number::Matrix
+    food_collected::Int
+    diffusion_rate::Int
+    x_dimension::Int
+    y_dimension::Int
+    nest_size::Int
+    evaporation_rate::Int
+    pheromone_amount::Int
+    spread_pheromone::Bool
+    pheromone_floor::Int
+    pheromone_ceiling::Int
+end</code></pre><p>A convenience method to truncate a Float to an integer.</p><pre><code class="language-julia hljs">int(x::Float64) = trunc(Int, x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">int (generic function with 1 method)</code></pre><h2 id="Initialize-Model"><a class="docs-heading-anchor" href="#Initialize-Model">Initialize Model</a><a id="Initialize-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Initialize-Model" title="Permalink"></a></h2><p>This method sets up the model and the agents for AntWorld.</p><p>It starts by setting the random number generator&#39;s seed. Then, it calculates the furthest distance possible an agent could be from another point in the world, for normalization purposes. It then calculates the center of the grid.</p><p>Then it initializes matrices for the nest location, pheromone trails, amounts of food, and food source numbers. These are the same dimensions as AntWorld grid and are standard Julia arrays.</p><p>Next it establishes the center positions of each food source. Now we iterate over all the positions in the grid and set values in the corresponding Julia array which is then sent to the model properties. The model properties is then used to create the model and subsequently the Ants (agents) are created.</p><pre><code class="language-julia hljs">function initialize_model(;number_ants::Int = 125, dimensions::Tuple = (70, 70), diffusion_rate::Int = 50, food_size::Int = 7, random_seed::Int = 2954, nest_size::Int = 5, evaporation_rate::Int = 10, pheromone_amount::Int = 60, spread_pheromone::Bool = false, pheromone_floor::Int = 5, pheromone_ceiling::Int = 100)
+    @info &quot;Starting the model initialization \n  number_ants: $(number_ants)\n  dimensions: $(dimensions)\n  diffusion_rate: $(diffusion_rate)\n  food_size: $(food_size)\n  random_seed: $(random_seed)&quot;
+    rng = Random.Xoshiro(random_seed)
+
+    furthest_distance = sqrt(dimensions[1] ^ 2 + dimensions[2] ^ 2)
+
+    x_center = dimensions[1] / 2
+    y_center = dimensions[2] / 2
+    @debug &quot;x_center: $(x_center) y_center: $(y_center)&quot;
+
+    nest_locations = zeros(Float32, dimensions)
+    pheromone_trails = zeros(Float32, dimensions)
+
+    food_amounts = zeros(dimensions)
+    food_source_number = zeros(dimensions)
+
+    food_center_1 = (int(x_center + 0.6 * x_center), int(y_center))
+    food_center_2 = (int(0.4 * x_center), int(0.4 * y_center))
+    food_center_3 = (int(0.2 * x_center), int(y_center + 0.8 * y_center))
+    @debug &quot;Food Center 1: $(food_center_1) Food Center 2: $(food_center_2) Food Center 3: $(food_center_3)&quot;
+
+    food_collected = 0
+
+    for x_val in 1:dimensions[1]
+        for y_val in 1:dimensions[2]
+            nest_locations[x_val, y_val] = ((furthest_distance - sqrt((x_val - x_center) ^ 2 + (y_val - y_center) ^ 2)) / furthest_distance) * 100
+            food_1 = (sqrt((x_val - food_center_1[1]) ^ 2 + (y_val - food_center_1[2]) ^ 2)) &lt; food_size
+            food_2 = (sqrt((x_val - food_center_2[1]) ^ 2 + (y_val - food_center_2[2]) ^ 2)) &lt; food_size
+            food_3 = (sqrt((x_val - food_center_3[1]) ^ 2 + (y_val - food_center_3[2]) ^ 2)) &lt; food_size
+            food_amounts[x_val, y_val] = food_1 || food_2 || food_3 ? rand(rng, [1, 2]) : 0
+            if food_1
+                food_source_number[x_val, y_val] = 1
+            elseif food_2
+                food_source_number[x_val, y_val] = 2
+            elseif food_3
+                food_source_number[x_val, y_val] = 3
+            end
+        end
+    end
+
+    properties = AntWorldProperties(
+        pheromone_trails,
+        food_amounts,
+        nest_locations,
+        food_source_number,
+        food_collected,
+        diffusion_rate,
+        dimensions[1],
+        dimensions[2],
+        nest_size,
+        evaporation_rate,
+        pheromone_amount,
+        spread_pheromone,
+        pheromone_floor,
+        pheromone_ceiling
+        )
+
+    model = StandardABM(
+        Ant,
+        GridSpace(dimensions, periodic = false);
+        properties,
+        rng,
+        agent_step! = ant_step!,
+        model_step! = antworld_step!,
+        scheduler = Schedulers.Randomly(),
+        container = Vector
+    )
+
+    for n in 1:number_ants
+        add_agent!((x_center, y_center), model, false, rand(abmrng(model), 1:8), 0, false)
+    end
+    @info &quot;Finished the model initialization&quot;
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">initialize_model (generic function with 1 method)</code></pre><h2 id="Support-Methods"><a class="docs-heading-anchor" href="#Support-Methods">Support Methods</a><a id="Support-Methods-1"></a><a class="docs-heading-anchor-permalink" href="#Support-Methods" title="Permalink"></a></h2><h3 id="Change-direction"><a class="docs-heading-anchor" href="#Change-direction">Change direction</a><a id="Change-direction-1"></a><a class="docs-heading-anchor-permalink" href="#Change-direction" title="Permalink"></a></h3><p>This method is used to detect chemical gradients for the ant to turn towards. By accepting a <code>Matrix</code>, we can generically use this for both following pheromone trails and the way home.</p><pre><code class="language-julia hljs">function detect_change_direction(agent::Ant, model_layer::Matrix)
+    x_dimension = size(model_layer)[1]
+    y_dimension = size(model_layer)[2]
+    left_pos = adjacent_dict[mod1(agent.facing_direction - 1, number_directions)]
+    right_pos = adjacent_dict[mod1(agent.facing_direction + 1, number_directions)]
+
+    scent_ahead = model_layer[mod1(agent.pos[1] + adjacent_dict[agent.facing_direction][1], x_dimension),
+        mod1(agent.pos[2] + adjacent_dict[agent.facing_direction][2], y_dimension)]
+    scent_left = model_layer[mod1(agent.pos[1] + left_pos[1], x_dimension),
+        mod1(agent.pos[2] + left_pos[2], y_dimension)]
+    scent_right = model_layer[mod1(agent.pos[1] + right_pos[1], x_dimension),
+        mod1(agent.pos[2] + right_pos[2], y_dimension)]
+
+    if (scent_right &gt; scent_ahead) || (scent_left &gt; scent_ahead)
+        if scent_right &gt; scent_left
+            agent.facing_direction = mod1(agent.facing_direction + 1, number_directions)
+        else
+            agent.facing_direction =  mod1(agent.facing_direction - 1, number_directions)
+        end
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">detect_change_direction (generic function with 1 method)</code></pre><p>Convenience function to have the Ant turn around.</p><pre><code class="language-julia hljs">turn_around(agent) = agent.facing_direction = mod1(agent.facing_direction + number_directions / 2, number_directions)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">turn_around (generic function with 1 method)</code></pre><h3 id="Wiggle"><a class="docs-heading-anchor" href="#Wiggle">Wiggle</a><a id="Wiggle-1"></a><a class="docs-heading-anchor-permalink" href="#Wiggle" title="Permalink"></a></h3><p>Introduces the ability for some randomness in the ants behavior. Even when following a trail, this will cause ants to Randomly() face somewhere in a 45 degree direction of what is ideal for them.</p><pre><code class="language-julia hljs">function wiggle(agent::Ant, model)
+    direction = rand(abmrng(model), [0, rand(abmrng(model), [-1, 1])])
+    agent.facing_direction = mod1(agent.facing_direction + direction, number_directions)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">wiggle (generic function with 1 method)</code></pre><h3 id="Apply-pheromones"><a class="docs-heading-anchor" href="#Apply-pheromones">Apply pheromones</a><a id="Apply-pheromones-1"></a><a class="docs-heading-anchor-permalink" href="#Apply-pheromones" title="Permalink"></a></h3><p>Applies pheromone to the grid. Used by the <code>Ant</code> when carrying food back to the nest. By default it only applies pheromone to the grid the <code>Ant</code> is currently on, but there is an option to spread the pheromone to perpendicular spaces at the same time.</p><pre><code class="language-julia hljs">function apply_pheromone(agent::Ant, model; pheromone_val::Int = 60, spread_pheromone::Bool = false)
+    model.pheromone_trails[agent.pos...] += pheromone_val
+    model.pheromone_trails[agent.pos...]  = model.pheromone_trails[agent.pos...] ≥ model.pheromone_floor ? model.pheromone_trails[agent.pos...] : 0
+
+    if spread_pheromone
+        left_pos = adjacent_dict[mod1(agent.facing_direction - 2, number_directions)]
+        right_pos = adjacent_dict[mod1(agent.facing_direction + 2, number_directions)]
+
+        model.pheromone_trails[mod1(agent.pos[1] + left_pos[1], model.x_dimension),
+            mod1(agent.pos[2] + left_pos[2], model.y_dimension)] += (pheromone_val / 2)
+        model.pheromone_trails[mod1(agent.pos[1] + right_pos[1], model.x_dimension),
+            mod1(agent.pos[2] + right_pos[2], model.y_dimension)] += (pheromone_val / 2)
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">apply_pheromone (generic function with 1 method)</code></pre><h3 id="Diffuse"><a class="docs-heading-anchor" href="#Diffuse">Diffuse</a><a id="Diffuse-1"></a><a class="docs-heading-anchor-permalink" href="#Diffuse" title="Permalink"></a></h3><p>Diffuse is the method used by the world to spread the pheromone chemicals to adjacent cells. The spread will place (the current amount on grid space * diffusion rate / number of directions) to each adjacent grid space. Then the current space is reduced by the amount that was spread to the surrounding areas.</p><pre><code class="language-julia hljs">function diffuse(model_layer::Matrix, diffusion_rate::Int)
+    x_dimension = size(model_layer)[1]
+    y_dimension = size(model_layer)[2]
+
+    for x_val in 1:x_dimension
+        for y_val in 1:y_dimension
+            sum_for_adjacent = model_layer[x_val, y_val] * (diffusion_rate / 100) / number_directions
+            for (_, i) in adjacent_dict
+                model_layer[mod1(x_val + i[1], x_dimension), mod1(y_val + i[2], y_dimension)] += sum_for_adjacent
+            end
+            model_layer[x_val, y_val] *= ((100 - diffusion_rate) / 100)
+        end
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">diffuse (generic function with 1 method)</code></pre><h2 id="Agent-Step"><a class="docs-heading-anchor" href="#Agent-Step">Agent Step</a><a id="Agent-Step-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-Step" title="Permalink"></a></h2><p>The function to perform the ant steps. It is split into two main branches - does the <code>Ant</code> have food or not. <br/>If the <code>Ant</code> has food, then if it is at a nest location, it drops off the food and turns around. If not at a nest location, then it determines the best way back to the nest. Finally it lays down some pheromone. <br/>If the <code>Ant</code> doesn&#39;t have food, but it is at a food location, it picks up food and turns around. If it&#39;s not at a food location, it tries to follow a pheromone trail to food. <br/>Then it applies a wiggle (random search if without food) and then moves the agent.</p><pre><code class="language-julia hljs">function ant_step!(agent::Ant, model)
+    @debug &quot;Agent State: \n  pos: $(agent.pos)\n  pos_type:$(typeof(agent.pos)) facing_direction: $(agent.facing_direction)\n  has_food: $(agent.has_food)&quot;
+    if agent.has_food
+        if model.nest_locations[agent.pos...] &gt; 100 - model.nest_size
+            @debug &quot;$(agent.n) arrived at nest with food&quot;
+            agent.food_collected += 1
+            agent.food_collected_once = true
+            model.food_collected += 1
+            agent.has_food = false
+            turn_around(agent)
+        else
+            detect_change_direction(agent, model.nest_locations)
+        end
+        apply_pheromone(agent, model, pheromone_val = model.pheromone_amount)
+    else
+        if model.food_amounts[agent.pos...] &gt; 0
+            @debug &quot;$(agent.n) has found food.&quot;
+            agent.has_food = true
+            model.food_amounts[agent.pos...] -= 1
+            apply_pheromone(agent, model, pheromone_val = model.pheromone_amount)
+            turn_around(agent)
+        elseif model.pheromone_trails[agent.pos...] &gt; model.pheromone_floor
+            detect_change_direction(agent, model.pheromone_trails)
+        end
+    end
+    wiggle(agent, model)
+    move_agent!(agent, (mod1(agent.pos[1] + adjacent_dict[agent.facing_direction][1], model.x_dimension), mod1(agent.pos[2] + adjacent_dict[agent.facing_direction][2], model.y_dimension)), model)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ant_step! (generic function with 1 method)</code></pre><h2 id="Model-Step"><a class="docs-heading-anchor" href="#Model-Step">Model Step</a><a id="Model-Step-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Step" title="Permalink"></a></h2><p>The model step for <code>AntWorld</code>. First, it diffuses the chemicals out across the grid. <br/>Then it evaporates some of pheromone from every grid space. <br/>The map! function reduces the amount of pheromone_trails.</p><pre><code class="language-julia hljs">function antworld_step!(model)
+    diffuse(model.pheromone_trails, model.diffusion_rate)
+    map!((x) -&gt; x ≥ model.pheromone_floor ? x * (100 - model.evaporation_rate) / 100 : 0., model.pheromone_trails, model.pheromone_trails)
+
+    if mod1(abmtime(model), 100) == 100
+        @info &quot;Step $(abmtime(model))&quot;
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">antworld_step! (generic function with 1 method)</code></pre><h2 id="Displaying-and-Running"><a class="docs-heading-anchor" href="#Displaying-and-Running">Displaying and Running</a><a id="Displaying-and-Running-1"></a><a class="docs-heading-anchor-permalink" href="#Displaying-and-Running" title="Permalink"></a></h2><pre><code class="language-julia hljs">using CairoMakie</code></pre><p>Establish a <code>ConsoleLogger</code> to follow what is happening in the model run.</p><pre><code class="language-julia hljs">debuglogger = ConsoleLogger(stderr, Logging.Info)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Logging.ConsoleLogger(IOContext(Base.PipeEndpoint(RawFD(4294967295) closed, 0 bytes waiting)), Info, Logging.default_metafmt, true, 0, Dict{Any, Int64}())</code></pre><h3 id="Displaying-heatmap"><a class="docs-heading-anchor" href="#Displaying-heatmap">Displaying heatmap</a><a id="Displaying-heatmap-1"></a><a class="docs-heading-anchor-permalink" href="#Displaying-heatmap" title="Permalink"></a></h3><p>This function builds a heat map based on various map properties to display in the grid. <br/>It shows the nest location, food locations, and pheromone trails. <br/>Set the value of the heatmap to NaN so it displays as white</p><pre><code class="language-julia hljs">function heatmap(model)
+    heatmap = zeros((model.x_dimension, model.y_dimension))
+    for x_val in 1:model.x_dimension
+        for y_val in 1:model.y_dimension
+            if model.nest_locations[x_val, y_val] &gt; 100 - model.nest_size
+                heatmap[x_val, y_val] = 150
+            elseif model.food_amounts[x_val, y_val] &gt; 0
+                heatmap[x_val, y_val] = 200
+            elseif model.pheromone_trails[x_val, y_val] &gt; model.pheromone_floor
+                heatmap[x_val, y_val] = model.pheromone_trails[x_val, y_val] ≥ model.pheromone_floor ? clamp(model.pheromone_trails[x_val, y_val], model.pheromone_floor, model.pheromone_ceiling) : 0
+            else
+                heatmap[x_val, y_val] = NaN
+            end
+        end
+    end
+    return heatmap
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">heatmap (generic function with 1 method)</code></pre><p>Turn the ant red when it has food.</p><pre><code class="language-julia hljs">ant_color(ant::Ant) = ant.has_food ? :red : :black</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ant_color (generic function with 1 method)</code></pre><h4 id="Keywords-to-use-for-plotting."><a class="docs-heading-anchor" href="#Keywords-to-use-for-plotting.">Keywords to use for plotting.</a><a id="Keywords-to-use-for-plotting.-1"></a><a class="docs-heading-anchor-permalink" href="#Keywords-to-use-for-plotting." title="Permalink"></a></h4><p>ac (agent color) = ant_color function <br/>as (agent size) = the size of the agent <br/>am (agent model) = the icon to use for the agent, here a diamond.</p><pre><code class="language-julia hljs">plotkwargs = (
+    agent_color = ant_color, agent_size = 20, agent_marker = &#39;♦&#39;,
+    heatarray = heatmap,
+    heatkwargs = (colormap = Reverse(:viridis), colorrange = (0, 200),)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(agent_color = Main.ant_color, agent_size = 20, agent_marker = &#39;♦&#39;, heatarray = Main.heatmap, heatkwargs = (colormap = Makie.Reverse{Symbol}(:viridis), colorrange = (0, 200)))</code></pre><h4 id="Running-the-model."><a class="docs-heading-anchor" href="#Running-the-model.">Running the model.</a><a id="Running-the-model.-1"></a><a class="docs-heading-anchor-permalink" href="#Running-the-model." title="Permalink"></a></h4><p>There are two options, to explore or to simply get a video of the run.</p><pre><code class="language-julia hljs">video = true
+with_logger(debuglogger) do
+    model = initialize_model(;number_ants = 125, random_seed = 6666, pheromone_amount = 60, evaporation_rate = 5)
+    if !video
+        params = Dict(
+            :evaporation_rate =&gt; 0:1:100,
+            :diffusion_rate =&gt; 0:1:100,
+        )
+
+        has_food(agent) = agent.has_food
+
+        adata = [(:food_collected_once, count)]
+        mdata = [:food_collected]
+
+        @info &quot;Starting exploration&quot;
+        fig, ax, abmobs = abmplot(
+            model;
+            params,
+            plotkwargs...,
+            adata, alabels = [&quot;Num Ants Collected&quot;],
+            mdata, mlabels = [&quot;Total Food Collected&quot;]
+        )
+
+        display(fig)
+        @info &quot;fig: $(fig)\n ax: $(ax)\n abmobs: $(abmobs)&quot;
+    else
+        @info &quot;Starting creating a video&quot;
+        abmvideo(
+            &quot;antworld.mp4&quot;,
+            model;
+            title = &quot;Ant World&quot;,
+            frames = 1000,
+            plotkwargs...,
+        )
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">┌ Info: </span></span>Starting the model initialization
+<span class="sgr36"><span class="sgr1">│ </span></span>  number_ants: 125
+<span class="sgr36"><span class="sgr1">│ </span></span>  dimensions: (70, 70)
+<span class="sgr36"><span class="sgr1">│ </span></span>  diffusion_rate: 50
+<span class="sgr36"><span class="sgr1">│ </span></span>  food_size: 7
+<span class="sgr36"><span class="sgr1">└ </span></span>  random_seed: 6666
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Finished the model initialization
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Starting creating a video
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 0
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 100
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 200
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 300
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 400
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 500
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 600
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 700
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 800
+<span class="sgr36"><span class="sgr1">[ Info: </span></span>Step 900</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Introduction</a><a class="docs-footer-nextpage" href="../battle/">Battle Royale »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Friday 15 March 2024 18:31">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

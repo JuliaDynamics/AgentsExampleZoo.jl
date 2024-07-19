@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Conway&#39;s game of life · Agents.jl Example Zoo</title><meta name="title" content="Conway&#39;s game of life · Agents.jl Example Zoo"/><meta property="og:title" content="Conway&#39;s game of life · Agents.jl Example Zoo"/><meta property="twitter:title" content="Conway&#39;s game of life · Agents.jl Example Zoo"/><meta name="description" content="Documentation for Agents.jl Example Zoo."/><meta property="og:description" content="Documentation for Agents.jl Example Zoo."/><meta property="twitter:description" content="Documentation for Agents.jl Example Zoo."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Agents.jl Example Zoo logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Agents.jl Example Zoo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../ants/">Ants</a></li><li><a class="tocitem" href="../battle/">Battle Royale</a></li><li><a class="tocitem" href="../social_distancing/">Continuous space social distancing</a></li><li class="is-active"><a class="tocitem" href>Conway&#39;s game of life</a><ul class="internal"><li><a class="tocitem" href="#1.-Define-the-rules"><span>1. Define the rules</span></a></li><li><a class="tocitem" href="#2.-Build-the-model"><span>2. Build the model</span></a></li><li><a class="tocitem" href="#3.-Animate-the-model"><span>3. Animate the model</span></a></li></ul></li><li><a class="tocitem" href="../growing_bacteria/">Bacterial Growth</a></li><li><a class="tocitem" href="../daisyworld/">Daisyworld</a></li><li><a class="tocitem" href="../forest_fire/">Forest fire</a></li><li><a class="tocitem" href="../fractal_growth/">Fractal Growth</a></li><li><a class="tocitem" href="../hk/">Hegselmann-Krause opinion dynamics</a></li><li><a class="tocitem" href="../maze/">Maze Solver</a></li><li><a class="tocitem" href="../runners/">Mountain Runners</a></li><li><a class="tocitem" href="../opinion_spread/">Opinion spread</a></li><li><a class="tocitem" href="../sugarscape/">Sugarscape</a></li><li><a class="tocitem" href="../wealth_distribution/">Wealth distribution model</a></li><li><a class="tocitem" href="../wright-fisher/">Wright-Fisher model of evolution</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Conway&#39;s game of life</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Conway&#39;s game of life</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl/blob/main/docs/examples/game_of_life_2D_CA.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Conway&#39;s-game-of-life"><a class="docs-heading-anchor" href="#Conway&#39;s-game-of-life">Conway&#39;s game of life</a><a id="Conway&#39;s-game-of-life-1"></a><a class="docs-heading-anchor-permalink" href="#Conway&#39;s-game-of-life" title="Permalink"></a></h1><video width="auto" controls autoplay loop>
+<source src="../game_of_life.mp4" type="video/mp4">
+</video><p><a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of life on wikipedia</a>.</p><pre><code class="language-julia hljs">using Agents, Random</code></pre><h2 id="1.-Define-the-rules"><a class="docs-heading-anchor" href="#1.-Define-the-rules">1. Define the rules</a><a id="1.-Define-the-rules-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Define-the-rules" title="Permalink"></a></h2><p>Conway&#39;s game of life is a <em>cellular automaton</em>, where each cell of the discrete space contains one agent only.</p><p>The rules of Conway&#39;s game of life are defined based on four numbers: Death, Survival, Reproduction, Overpopulation, grouped as (D, S, R, O) Cells die if the number of their living neighbors is &lt;D or &gt;O, survive if the number of their living neighbors is ≤S, come to life if their living neighbors are  ≥R and ≤O.</p><pre><code class="language-julia hljs">rules = (2, 3, 3, 3) # (D, S, R, O)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(2, 3, 3, 3)</code></pre><h2 id="2.-Build-the-model"><a class="docs-heading-anchor" href="#2.-Build-the-model">2. Build the model</a><a id="2.-Build-the-model-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Build-the-model" title="Permalink"></a></h2><p>Like in the <a href="../forest_fire/#Forest-fire">Forest fire</a> example, we have a cellular automaton in our hands. This is a model that does not require any agents. Just a matrix whose &quot;color&quot; or &quot;status&quot; is the only thing necessary for the simulation.</p><p>We still need to define a dummy agent type though for <code>ABM</code>:</p><pre><code class="language-julia hljs">@agent struct Automaton(GridAgent{2}) end</code></pre><p>The following function builds a 2D cellular automaton given some <code>rules</code>. <code>dims</code> is a tuple of integers determining the width and height of the grid environment. <code>metric</code> specifies how to measure distances in the space, and in our example it actually decides whether cells connect to their diagonal neighbors or not. <code>:chebyshev</code> includes diagonal, <code>:manhattan</code> does not.</p><p>This function creates a model where all cells are dead.</p><pre><code class="language-julia hljs">function build_model(rules::Tuple;
+        alive_probability = 0.2,
+        dims = (100, 100), metric = :chebyshev, seed = 42
+    )
+    space = GridSpaceSingle(dims; metric)
+    properties = Dict(:rules =&gt; rules)
+    status = zeros(Bool, dims)
+    # We use a second copy so that we can do a &quot;synchronous&quot; update of the status
+    new_status = zeros(Bool, dims)
+    # We use a `NamedTuple` for the parameter container to avoid type instabilities
+    properties = (; rules, status, new_status)
+    model = StandardABM(Automaton, space; properties, model_step! = game_of_life_step!,
+                rng = MersenneTwister(seed), container = Vector)
+    # Turn some of the cells on
+    for pos in positions(model)
+        if rand(abmrng(model)) &lt; alive_probability
+            status[pos...] = true
+        end
+    end
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">build_model (generic function with 1 method)</code></pre><p>Now we define a stepping function for the model to apply the rules to agents. We will also perform a synchronous agent update (meaning that the value of all agents changes after we have decided the new value for each agent individually).</p><pre><code class="language-julia hljs">function game_of_life_step!(model)
+    # First, get the new statuses
+    new_status = model.new_status
+    status = model.status
+    @inbounds for pos in positions(model)
+        # Convenience function that counts how many nearby cells are &quot;alive&quot;
+        n = alive_neighbors(pos, model)
+        if status[pos...] == true &amp;&amp; model.rules[1] ≤ n ≤ model.rules[4]
+            new_status[pos...] = true
+        elseif status[pos...] == false &amp;&amp; model.rules[3] ≤ n ≤ model.rules[4]
+            new_status[pos...] = true
+        else
+            new_status[pos...] = false
+        end
+    end
+    # Then, update the new statuses into the old
+    status .= new_status
+    return
+end
+
+function alive_neighbors(pos, model) # count alive neighboring cells
+    c = 0
+    @inbounds for near_pos in nearby_positions(pos, model)
+        if model.status[near_pos...] == true
+            c += 1
+        end
+    end
+    return c
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">alive_neighbors (generic function with 1 method)</code></pre><p>now we can instantiate the model:</p><pre><code class="language-julia hljs">model = build_model(rules)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StandardABM with 0 agents of type Automaton
+ agents container: Vector
+ space: GridSpaceSingle with size (100, 100), metric=chebyshev, periodic=true
+ scheduler: fastest
+ properties: rules, status, new_status</code></pre><h2 id="3.-Animate-the-model"><a class="docs-heading-anchor" href="#3.-Animate-the-model">3. Animate the model</a><a id="3.-Animate-the-model-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Animate-the-model" title="Permalink"></a></h2><p>We use the <a href="@ref"><code>InteractiveDynamics.abmvideo</code></a> for creating an animation and saving it to an mp4</p><pre><code class="language-julia hljs">using CairoMakie
+
+plotkwargs = (
+    add_colorbar = false,
+    heatarray = :status,
+    heatkwargs = (
+        colorrange = (0, 1),
+        colormap = cgrad([:white, :black]; categorical = true),
+    ),
+)
+
+abmvideo(
+    &quot;game_of_life.mp4&quot;,
+    model;
+    title = &quot;Game of Life&quot;,
+    framerate = 10,
+    frames = 60,
+    plotkwargs...,
+)</code></pre><video width="auto" controls autoplay loop>
+<source src="../game_of_life.mp4" type="video/mp4">
+</video></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../social_distancing/">« Continuous space social distancing</a><a class="docs-footer-nextpage" href="../growing_bacteria/">Bacterial Growth »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Friday 15 March 2024 18:31">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

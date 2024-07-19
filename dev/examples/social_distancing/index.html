@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Continuous space social distancing · Agents.jl Example Zoo</title><meta name="title" content="Continuous space social distancing · Agents.jl Example Zoo"/><meta property="og:title" content="Continuous space social distancing · Agents.jl Example Zoo"/><meta property="twitter:title" content="Continuous space social distancing · Agents.jl Example Zoo"/><meta name="description" content="Documentation for Agents.jl Example Zoo."/><meta property="og:description" content="Documentation for Agents.jl Example Zoo."/><meta property="twitter:description" content="Documentation for Agents.jl Example Zoo."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Agents.jl Example Zoo logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Agents.jl Example Zoo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../ants/">Ants</a></li><li><a class="tocitem" href="../battle/">Battle Royale</a></li><li class="is-active"><a class="tocitem" href>Continuous space social distancing</a><ul class="internal"><li><a class="tocitem" href="#Moving-agents-in-continuous-space"><span>Moving agents in continuous space</span></a></li><li><a class="tocitem" href="#Billiard-like-interaction"><span>Billiard-like interaction</span></a></li><li><a class="tocitem" href="#Immovable-agents"><span>Immovable agents</span></a></li><li><a class="tocitem" href="#Adding-Virus-spread-(SIR)"><span>Adding Virus spread (SIR)</span></a></li><li><a class="tocitem" href="#Exponential-spread"><span>Exponential spread</span></a></li><li><a class="tocitem" href="#Social-distancing"><span>Social distancing</span></a></li></ul></li><li><a class="tocitem" href="../game_of_life_2D_CA/">Conway&#39;s game of life</a></li><li><a class="tocitem" href="../growing_bacteria/">Bacterial Growth</a></li><li><a class="tocitem" href="../daisyworld/">Daisyworld</a></li><li><a class="tocitem" href="../forest_fire/">Forest fire</a></li><li><a class="tocitem" href="../fractal_growth/">Fractal Growth</a></li><li><a class="tocitem" href="../hk/">Hegselmann-Krause opinion dynamics</a></li><li><a class="tocitem" href="../maze/">Maze Solver</a></li><li><a class="tocitem" href="../runners/">Mountain Runners</a></li><li><a class="tocitem" href="../opinion_spread/">Opinion spread</a></li><li><a class="tocitem" href="../sugarscape/">Sugarscape</a></li><li><a class="tocitem" href="../wealth_distribution/">Wealth distribution model</a></li><li><a class="tocitem" href="../wright-fisher/">Wright-Fisher model of evolution</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Continuous space social distancing</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Continuous space social distancing</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaDynamics/AgentsExampleZoo.jl/blob/main/docs/examples/social_distancing.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Continuous-space-social-distancing"><a class="docs-heading-anchor" href="#Continuous-space-social-distancing">Continuous space social distancing</a><a id="Continuous-space-social-distancing-1"></a><a class="docs-heading-anchor-permalink" href="#Continuous-space-social-distancing" title="Permalink"></a></h1><video width="auto" controls autoplay loop>
+<source src="../socialdist5.mp4" type="video/mp4">
+</video><p>This is a model similar to our <a href="@ref">SIR model for the spread of COVID-19</a>. But instead of having different cities, we let agents move in one continuous space and transfer the disease if they come into contact with one another. This model is partly inspired by <a href="https://www.washingtonpost.com/graphics/2020/world/corona-simulator/">this article</a>, and can complement the SIR graph model. The graph model can model virus transfer between cities, whilst this model can be used to study what happens within a city.</p><p>The example here serves additionally as an introduction to using continuous space, modelling billiard-like collisions in that space, and animating the agent motion in the space. Notice that a detailed description of the basics of the model regarding disease spreading exists in the SIR example, and is not repeated here.</p><p>It is also available from the <code>Models</code> module as <a href="@ref"><code>Models.social_distancing</code></a>.</p><h2 id="Moving-agents-in-continuous-space"><a class="docs-heading-anchor" href="#Moving-agents-in-continuous-space">Moving agents in continuous space</a><a id="Moving-agents-in-continuous-space-1"></a><a class="docs-heading-anchor-permalink" href="#Moving-agents-in-continuous-space" title="Permalink"></a></h2><p>Let us first create a simple model where balls move around in a continuous space. We need to create agents that comply with <a href="@ref"><code>ContinuousSpace</code></a>, i.e. they have a <code>pos</code> and <code>vel</code> fields, both of which are tuples of float numbers.</p><pre><code class="language-julia hljs">using Agents, Random
+
+@agent struct SocialAgent(ContinuousAgent{2, Float64})
+    mass::Float64
+end</code></pre><p>The <code>mass</code> field will come in handy later on, when we implement social isolation (i.e. that some agents don&#39;t move and can&#39;t be moved).</p><p>Let&#39;s also initialize a trivial model with continuous space</p><pre><code class="language-julia hljs">function ball_model(; speed = 0.002)
+    space2d = ContinuousSpace((1, 1); spacing = 0.02)
+    model = StandardABM(SocialAgent, space2d; agent_step!, properties = Dict(:dt =&gt; 1.0),
+                        rng = MersenneTwister(42))
+    # And add some agents to the model
+    for ind in 1:500
+        pos = Tuple(rand(abmrng(model), 2))
+        vel = sincos(2π * rand(abmrng(model))) .* speed
+        add_agent!(pos, model, vel, 1.0)
+    end
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ball_model (generic function with 1 method)</code></pre><p>We took advantage of the functionality of <a href="@ref"><code>add_agent!</code></a> that creates the agents automatically. For now all agents have the same absolute <code>speed</code>, and <code>mass</code>.</p><p>The agent step function for now is trivial. It is just <a href="@ref"><code>move_agent!</code></a> in continuous space</p><pre><code class="language-julia hljs">agent_step!(agent, model) = move_agent!(agent, model, model.dt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">agent_step! (generic function with 1 method)</code></pre><p><code>dt</code> is our time resolution, but we will talk about this more later!</p><h2 id="Billiard-like-interaction"><a class="docs-heading-anchor" href="#Billiard-like-interaction">Billiard-like interaction</a><a id="Billiard-like-interaction-1"></a><a class="docs-heading-anchor-permalink" href="#Billiard-like-interaction" title="Permalink"></a></h2><p>We will model the agents as balls that collide with each other. To this end, we will use two functions from the continuous space API:</p><ol><li><a href="@ref"><code>interacting_pairs</code></a></li><li><a href="@ref"><code>elastic_collision!</code></a></li></ol><p>We want all agents to interact in one go, and we want to avoid double interactions (as instructed by <a href="@ref"><code>interacting_pairs</code></a>), so we define a model step.</p><pre><code class="language-julia hljs">function model_step!(model)
+    for (a1, a2) in interacting_pairs(model, 0.012, :nearest)
+        elastic_collision!(a1, a2, :mass)
+    end
+end
+
+model = ball_model()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StandardABM with 500 agents of type SocialAgent
+ agents container: Dict
+ space: periodic continuous space with [1.0, 1.0] extent and spacing=0.02
+ scheduler: fastest
+ properties: dt</code></pre><p>And then make an animation</p><pre><code class="language-julia hljs">using CairoMakie
+
+abmvideo(
+    &quot;socialdist2.mp4&quot;,
+    model;
+    title = &quot;Billiard-like&quot;,
+    frames = 50,
+    spf = 2,
+    framerate = 25,
+)</code></pre><video width="auto" controls autoplay loop>
+<source src="../socialdist2.mp4" type="video/mp4">
+</video><p>Alright, this works great so far!</p><div class="admonition is-warning"><header class="admonition-header">Agents.jl is not a billiards simulator!</header><div class="admonition-body"><p>Please understand that Agents.jl does not accurately simulate billiard systems. This is the job of Julia packages <a href="https://github.com/JuliaDynamics/HardSphereDynamics.jl">HardSphereDynamics.jl</a> or <a href="https://juliadynamics.github.io/DynamicalBilliards.jl/dev/">DynamicalBilliards.jl</a>. In Agents.jl we only provide an approximating function <code>elastic_collision!</code>. The accuracy of this simulation increases as the time resolution <code>dt</code> decreases, but even in the limit <code>dt → 0</code> we still don&#39;t reach the accuracy of proper billiard packages.</p><p>Also notice that the plotted size of the circles representing agents is not deduced from the <code>interaction_radius</code> (as it should). We only eye-balled it to look similar enough.</p></div></div><h2 id="Immovable-agents"><a class="docs-heading-anchor" href="#Immovable-agents">Immovable agents</a><a id="Immovable-agents-1"></a><a class="docs-heading-anchor-permalink" href="#Immovable-agents" title="Permalink"></a></h2><p>For the following social distancing example, it will become crucial that some agents don&#39;t move, and can&#39;t be moved (i.e. they stay &quot;isolated&quot;). This is very easy to do with the <a href="@ref"><code>elastic_collision!</code></a> function, we only have to make some agents have infinite mass</p><pre><code class="language-julia hljs">model2 = ball_model()
+
+for id in 1:400
+    agent = model2[id]
+    agent.mass = Inf
+    agent.vel = (0.0, 0.0)
+end</code></pre><p>let&#39;s animate this again</p><pre><code class="language-julia hljs">abmvideo(
+    &quot;socialdist3.mp4&quot;,
+    model2;
+    title = &quot;Billiard-like with stationary agents&quot;,
+    frames = 50,
+    spf = 2,
+    framerate = 25,
+)</code></pre><video width="auto" controls autoplay loop>
+<source src="../socialdist3.mp4" type="video/mp4">
+</video><h2 id="Adding-Virus-spread-(SIR)"><a class="docs-heading-anchor" href="#Adding-Virus-spread-(SIR)">Adding Virus spread (SIR)</a><a id="Adding-Virus-spread-(SIR)-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Virus-spread-(SIR)" title="Permalink"></a></h2><p>We now add more functionality to these agents, according to the SIR model (see previous example). They can be infected with a disease and transfer the disease to other agents around them.</p><pre><code class="language-julia hljs">@agent struct PoorSoul(ContinuousAgent{2, Float64})
+    mass::Float64
+    days_infected::Int  # number of days since is infected
+    status::Symbol  # :S, :I or :R
+    β::Float64
+end</code></pre><p>Here <code>β</code> is the transmission probability, which we choose to make an agent parameter instead of a model parameter. It reflects the level of hygiene of an individual. In a realistic scenario, the actual virus transmission would depend on the <code>β</code> value of both agents, but we don&#39;t do that here for simplicity.</p><p>We also significantly modify the model creation, to have SIR-related parameters. Each step in the model corresponds to one hour.</p><pre><code class="language-julia hljs">const steps_per_day = 24
+
+using DrWatson: @dict
+function sir_initiation(;
+    infection_period = 30 * steps_per_day,
+    detection_time = 14 * steps_per_day,
+    reinfection_probability = 0.05,
+    isolated = 0.0, # in percentage
+    interaction_radius = 0.012,
+    dt = 1.0,
+    speed = 0.002,
+    death_rate = 0.044, # from website of WHO
+    N = 1000,
+    initial_infected = 5,
+    seed = 42,
+    βmin = 0.4,
+    βmax = 0.8,
+)
+
+    properties = (;
+        infection_period,
+        reinfection_probability,
+        detection_time,
+        death_rate,
+        interaction_radius,
+        dt,
+    )
+    space = ContinuousSpace((1,1); spacing = 0.02)
+    model = StandardABM(PoorSoul, space, agent_step! = sir_agent_step!,
+                        model_step! = sir_model_step!, properties = properties,
+                        rng = MersenneTwister(seed))
+
+    # Add initial individuals
+    for ind in 1:N
+        pos = Tuple(rand(abmrng(model), 2))
+        status = ind ≤ N - initial_infected ? :S : :I
+        isisolated = ind ≤ isolated * N
+        mass = isisolated ? Inf : 1.0
+        vel = isisolated ? (0.0, 0.0) : sincos(2π * rand(abmrng(model))) .* speed
+
+        # very high transmission probability
+        # we are modelling close encounters after all
+        β = (βmax - βmin) * rand(abmrng(model)) + βmin
+        add_agent!(pos, model, vel, mass, 0, status, β)
+    end
+
+    return model
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">sir_initiation (generic function with 1 method)</code></pre><p>We have increased the size of the model 10-fold (for more realistic further analysis)</p><p>To actually spread the virus, we modify the <code>model_step!</code> function, so that individuals have a probability to transmit the disease as they interact.</p><pre><code class="language-julia hljs">function transmit!(a1, a2, rp)
+    # for transmission, only 1 can have the disease (otherwise nothing happens)
+    count(a.status == :I for a in (a1, a2)) ≠ 1 &amp;&amp; return
+    infected, healthy = a1.status == :I ? (a1, a2) : (a2, a1)
+
+    rand(abmrng(model)) &gt; infected.β &amp;&amp; return
+
+    if healthy.status == :R
+        rand(abmrng(model)) &gt; rp &amp;&amp; return
+    end
+    healthy.status = :I
+end
+
+function sir_model_step!(model)
+    r = model.interaction_radius
+    for (a1, a2) in interacting_pairs(model, r, :nearest)
+        transmit!(a1, a2, model.reinfection_probability)
+        elastic_collision!(a1, a2, :mass)
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">sir_model_step! (generic function with 1 method)</code></pre><p>Notice that it is not necessary that the transmission interaction radius is the same as the billiard-ball dynamics. We only have them the same here for convenience, but in a real model they will probably differ.</p><p>We also modify the <code>agent_step!</code> function, so that we keep track of how long the agent has been infected, and whether they have to die or not.</p><pre><code class="language-julia hljs">function sir_agent_step!(agent, model)
+    move_agent!(agent, model, model.dt)
+    update!(agent)
+    recover_or_die!(agent, model)
+end
+
+update!(agent) = agent.status == :I &amp;&amp; (agent.days_infected += 1)
+
+function recover_or_die!(agent, model)
+    if agent.days_infected ≥ model.infection_period
+        if rand(abmrng(model)) ≤ model.death_rate
+            remove_agent!(agent, model)
+        else
+            agent.status = :R
+            agent.days_infected = 0
+        end
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">recover_or_die! (generic function with 1 method)</code></pre><p>Notice the constant <code>steps_per_day</code>, which approximates how many model steps correspond to one day (since the parameters we used in the previous graph SIR example were given in days).</p><p>To visualize this model, we will use black color for the susceptible, red for the infected infected and green for the recovered, leveraging <a href="@ref"><code>InteractiveDynamics.abmplot</code></a>.</p><pre><code class="language-julia hljs">sir_model = sir_initiation()
+
+sir_colors(a) = a.status == :S ? &quot;#2b2b33&quot; : a.status == :I ? &quot;#bf2642&quot; : &quot;#338c54&quot;
+
+fig, ax, abmp = abmplot(sir_model; ac = sir_colors)
+fig # display figure</code></pre><img src="57b43dfa.png" alt="Example block output"/><p>Alright, now we can animate this process for default parameters</p><pre><code class="language-julia hljs">sir_model = sir_initiation()
+
+abmvideo(
+    &quot;socialdist4.mp4&quot;,
+    sir_model;
+    title = &quot;SIR model&quot;,
+    frames = 50,
+    ac = sir_colors,
+    as = 10,
+    spf = 1,
+    framerate = 20,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>Keywords `as, am, ac` has been deprecated in favor of
+<span class="sgr33"><span class="sgr1">│ </span></span>          `agent_size, agent_marker, agent_color`
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ AgentsVisualizations ~/.julia/packages/Agents/0Muge/ext/AgentsVisualizations/src/abmplot.jl:73</span></code></pre><video width="auto" controls autoplay loop>
+<source src="../socialdist4.mp4" type="video/mp4">
+</video><h2 id="Exponential-spread"><a class="docs-heading-anchor" href="#Exponential-spread">Exponential spread</a><a id="Exponential-spread-1"></a><a class="docs-heading-anchor-permalink" href="#Exponential-spread" title="Permalink"></a></h2><p>We can all agree that these animations look interesting, but let&#39;s do some actual analysis of this model. The quantity we wish to look at is the number of infected over time, so let&#39;s calculate this, similarly with the graph SIR model.</p><pre><code class="language-julia hljs">infected(x) = count(i == :I for i in x)
+recovered(x) = count(i == :R for i in x)
+adata = [(:status, infected), (:status, recovered)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Tuple{Symbol, Function}}:
+ (:status, Main.infected)
+ (:status, Main.recovered)</code></pre><p>Let&#39;s do the following runs, with different parameters probabilities</p><pre><code class="language-julia hljs">r1, r2 = 0.04, 0.33
+β1, β2 = 0.5, 0.1
+sir_model1 = sir_initiation(reinfection_probability = r1, βmin = β1)
+sir_model2 = sir_initiation(reinfection_probability = r2, βmin = β1)
+sir_model3 = sir_initiation(reinfection_probability = r1, βmin = β2)
+
+data1, _ = run!(sir_model1, 2000; adata)
+data2, _ = run!(sir_model2, 2000; adata)
+data3, _ = run!(sir_model3, 2000; adata)
+
+data1[(end-10):end, :]</code></pre><div><div style = "float: left;"><span>11×3 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "header"><th class = "rowNumber" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">time</th><th style = "text-align: left;">infected_status</th><th style = "text-align: left;">recovered_status</th></tr><tr class = "subheader headerLastRow"><th class = "rowNumber" style = "font-weight: bold; text-align: right;"></th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th><th title = "Int64" style = "text-align: left;">Int64</th></tr></thead><tbody><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: right;">1990</td><td style = "text-align: right;">898</td><td style = "text-align: right;">17</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: right;">1991</td><td style = "text-align: right;">898</td><td style = "text-align: right;">17</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: right;">1992</td><td style = "text-align: right;">898</td><td style = "text-align: right;">17</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: right;">1993</td><td style = "text-align: right;">898</td><td style = "text-align: right;">17</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: right;">1994</td><td style = "text-align: right;">899</td><td style = "text-align: right;">16</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: right;">1995</td><td style = "text-align: right;">900</td><td style = "text-align: right;">15</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: right;">1996</td><td style = "text-align: right;">900</td><td style = "text-align: right;">15</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: right;">1997</td><td style = "text-align: right;">900</td><td style = "text-align: right;">15</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: right;">1998</td><td style = "text-align: right;">899</td><td style = "text-align: right;">16</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">10</td><td style = "text-align: right;">1999</td><td style = "text-align: right;">899</td><td style = "text-align: right;">16</td></tr><tr><td class = "rowNumber" style = "font-weight: bold; text-align: right;">11</td><td style = "text-align: right;">2000</td><td style = "text-align: right;">899</td><td style = "text-align: right;">16</td></tr></tbody></table></div><p>Now, we can plot the number of infected versus time</p><pre><code class="language-julia hljs">using CairoMakie
+
+figure = Figure()
+ax = figure[1, 1] = Axis(figure; ylabel = &quot;Infected&quot;)
+l1 = lines!(ax, data1[:, dataname((:status, infected))], color = :orange)
+l2 = lines!(ax, data2[:, dataname((:status, infected))], color = :blue)
+l3 = lines!(ax, data3[:, dataname((:status, infected))], color = :green)
+figure[1, 2][1,1] =
+    Legend(figure, [l1, l2, l3], [&quot;r=$r1, beta=$β1&quot;, &quot;r=$r2, beta=$β1&quot;, &quot;r=$r1, beta=$β2&quot;])
+figure</code></pre><img src="aaba01a5.png" alt="Example block output"/><p>Exponential growth is evident in all cases.</p><h2 id="Social-distancing"><a class="docs-heading-anchor" href="#Social-distancing">Social distancing</a><a id="Social-distancing-1"></a><a class="docs-heading-anchor-permalink" href="#Social-distancing" title="Permalink"></a></h2><p>Of course in reality a dampening mechanism will (hopefully) happen before all of the population is infected: a vaccine. This effectively introduces a 4th type of status, <code>:V</code> for vaccinated. This type can&#39;t get infected, and thus all remaining individuals that are already infected will (hopefully) survive or die out.</p><p>Until that point, social distancing is practiced. The best way to model social distancing is to make some agents simply not move (which feels like it approximates reality better).</p><pre><code class="language-julia hljs">sir_model = sir_initiation(isolated = 0.8)
+abmvideo(
+    &quot;socialdist5.mp4&quot;,
+    sir_model;
+    title = &quot;Social Distancing&quot;,
+    frames = 100,
+    spf = 2,
+    ac = sir_colors,
+    framerate = 20,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr33"><span class="sgr1">┌ Warning: </span></span>Keywords `as, am, ac` has been deprecated in favor of
+<span class="sgr33"><span class="sgr1">│ </span></span>          `agent_size, agent_marker, agent_color`
+<span class="sgr33"><span class="sgr1">└ </span></span><span class="sgr90">@ AgentsVisualizations ~/.julia/packages/Agents/0Muge/ext/AgentsVisualizations/src/abmplot.jl:73</span></code></pre><video width="auto" controls autoplay loop>
+<source src="../socialdist5.mp4" type="video/mp4">
+</video><p>Here we let some 20% of the population <em>not</em> be isolated, probably teenagers still partying, or anti-vaxers / flat-earthers that don&#39;t believe in science. Still, you can see that the spread of the virus is dramatically contained.</p><p>Let&#39;s look at the actual numbers, because animations are cool, but science is even cooler.</p><pre><code class="language-julia hljs">r4 = 0.04
+sir_model4 = sir_initiation(reinfection_probability = r4, βmin = β1, isolated = 0.8)
+
+data4, _ = run!(sir_model4, 2000; adata)
+
+l4 = lines!(ax, data4[:, dataname((:status, infected))], color = :red)
+figure[1, 2][2,1] = Legend(
+    figure,
+    [l4],
+    [&quot;r=$r4, social distancing&quot;],
+)
+figure</code></pre><img src="860d79dc.png" alt="Example block output"/><p>Here you can see the characteristic &quot;flattening the curve&quot; phrase you hear all over the news.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../battle/">« Battle Royale</a><a class="docs-footer-nextpage" href="../game_of_life_2D_CA/">Conway&#39;s game of life »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Friday 15 March 2024 18:31">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
