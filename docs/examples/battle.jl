@@ -182,7 +182,7 @@ function captor_behavior!(agent, model)
         ## Prisoner runs away in the commotion
         prisoner.shape = :utriangle
         prisoner.capture_time = 0
-        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model, ifempty=false)
+        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model; ifempty=false)
     end
 end
 
@@ -205,7 +205,7 @@ function endgame!(agent, model)
             opponent.shape = :rect
             showdown!(agent, opponent, model)
         else
-            walk!(agent, (sign.(target .- origin)..., 0), model, ifempty=false)
+            walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
         end
     end
 end
@@ -260,7 +260,7 @@ function agent_step!(agent, model)
             ## Sneak up behind them
             target = loc(closest_target(agent, occupied_ids, model))
             agent.shape = :pentagon
-            walk!(agent, (sign.(target .- origin)..., 0), model, ifempty=false)
+            walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
         else
             ## Opponents that are greatly higher in rank that the current agent
             strong_ids = collect(nearby_ids(agent, model, [(1, -5:5), (2, -5:5), (3, 2:4)]))
@@ -268,7 +268,7 @@ function agent_step!(agent, model)
                 ## Run away from nearest
                 target = loc(closest_target(agent, strong_ids, model))
                 agent.shape = :utriangle
-                walk!(agent, (sign.(origin .- target)..., 0), model, ifempty=false)
+                walk!(agent, (sign.(origin .- target)..., 0), model; ifempty=false)
             else
                 ## There are no distractions. Search for the closest worthy opponent
                 worthy_ids = collect(nearby_ids(agent, model, [(3, -1:1)]))
@@ -283,7 +283,7 @@ function agent_step!(agent, model)
                     else
                         ## Move towards worthy opponent
                         agent.shape = :diamond
-                        walk!(agent, (sign.(target .- origin)..., 0), model, ifempty=false)
+                        walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
                     end
                 else
                     ## Find any weak targets in the vicinity
@@ -304,7 +304,7 @@ function agent_step!(agent, model)
                         else
                             ## Chase down nearest (can move 2 steps at a time!)
                             agent.shape = :star4
-                            walk!(agent, (2 .* sign.(target .- origin)..., 0), model, ifempty=false)
+                            walk!(agent, (2 .* sign.(target .- origin)..., 0), model; ifempty=false)
                         end
                     else
                         ## Abandon honour. This is the end
