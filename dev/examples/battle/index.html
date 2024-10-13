@@ -9,7 +9,7 @@ using CairoMakie
     has_prisoner::Bool
     capture_time::Int
     shape::Symbol # shape of the fighter conveys what action they are currently doing
-end</code></pre><p>As you can see, the properties of out agent are very simple and contain only two parameters that are needed to store context from one time step to the next. All other properties needed are stored in the space. <code>pos</code> is three-dimensional, two for the actual space agents move within, and a third categorical dimension representing their level.</p><p>Now let&#39;s set up the battle field:</p><pre><code class="language-julia hljs">function battle(; fighters = 50, seed = 6547)
+end</code></pre><p>As you can see, the properties of out agent are very simple and contain only two parameters that are needed to store context from one time step to the next. All other properties needed are stored in the space. <code>pos</code> is three-dimensional, two for the actual space agents move within, and a third categorical dimension representing their level.</p><p>Now let&#39;s set up the battle field:</p><pre><code class="language-julia hljs">function create_battlefield(; fighters = 50, seed = 6547)
     model = StandardABM(
         Fighter,
         GridSpace((100, 100, 10); periodic = false);
@@ -28,7 +28,7 @@ end</code></pre><p>As you can see, the properties of out agent are very simple a
     end
 
     return model
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">battle (generic function with 1 method)</code></pre><p>50 opponents positioned Randomly() on a 100x100 grid, with no escape (<code>periodic = false</code>). To leverage categorical dimensions fully, non-periodic chebyshev space is necessary.</p><h2 id="Game-Dynamics"><a class="docs-heading-anchor" href="#Game-Dynamics">Game Dynamics</a><a id="Game-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Game-Dynamics" title="Permalink"></a></h2><p>To implement the rules of engagement, only an <code>agent_step!</code> function is required, along with a few helper functions.</p><pre><code class="language-julia hljs">loc(agent) = agent.pos[1:2]
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">create_battlefield (generic function with 1 method)</code></pre><p>50 opponents positioned Randomly() on a 100x100 grid, with no escape (<code>periodic = false</code>). To leverage categorical dimensions fully, non-periodic chebyshev space is necessary.</p><h2 id="Game-Dynamics"><a class="docs-heading-anchor" href="#Game-Dynamics">Game Dynamics</a><a id="Game-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Game-Dynamics" title="Permalink"></a></h2><p>To implement the rules of engagement, only an <code>agent_step!</code> function is required, along with a few helper functions.</p><pre><code class="language-julia hljs">loc(agent) = agent.pos[1:2]
 level(agent) = agent.pos[3]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">level (generic function with 1 method)</code></pre><p><code>space</code> allows us to invoke a number of helpful utilities provided by Agents.jl but only operate on our spatial dimensions, <code>level</code> is a wrapper to access the agent&#39;s experience easily.</p><p>Nearest agents that satisfy our search criteria can be identified via Euclidean distance solely on the spatial dimensions of our <code>GridSpace</code>.</p><pre><code class="language-julia hljs">function closest_target(agent::Fighter, ids::Vector{Int}, model::ABM)
     if length(ids) == 1
         closest = ids[1]
@@ -94,7 +94,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         # Prisoner runs away in the commotion
         prisoner.shape = :utriangle
         prisoner.capture_time = 0
-        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model)
+        walk!(prisoner, (rand(abmrng(model), -1:1, 2)..., 0), model; ifempty=false)
     end
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">captor_behavior! (generic function with 1 method)</code></pre><p>When there are only few fighters standing, the stakes are higher. Prior experience is paramount since there is no gain, and fights are to the death.</p><pre><code class="language-julia hljs">function endgame!(agent, model)
     origin = loc(agent)
@@ -112,7 +112,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
             opponent.shape = :rect
             showdown!(agent, opponent, model)
         else
-            walk!(agent, (sign.(target .- origin)..., 0), model)
+            walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
         end
     end
 end
@@ -148,7 +148,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
             # Sneak up behind them
             target = loc(closest_target(agent, occupied_ids, model))
             agent.shape = :pentagon
-            walk!(agent, (sign.(target .- origin)..., 0), model)
+            walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
         else
             # Opponents that are greatly higher in rank that the current agent
             strong_ids = collect(nearby_ids(agent, model, [(1, -5:5), (2, -5:5), (3, 2:4)]))
@@ -156,7 +156,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
                 # Run away from nearest
                 target = loc(closest_target(agent, strong_ids, model))
                 agent.shape = :utriangle
-                walk!(agent, (sign.(origin .- target)..., 0), model)
+                walk!(agent, (sign.(origin .- target)..., 0), model; ifempty=false)
             else
                 # There are no distractions. Search for the closest worthy opponent
                 worthy_ids = collect(nearby_ids(agent, model, [(3, -1:1)]))
@@ -171,7 +171,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
                     else
                         # Move towards worthy opponent
                         agent.shape = :diamond
-                        walk!(agent, (sign.(target .- origin)..., 0), model)
+                        walk!(agent, (sign.(target .- origin)..., 0), model; ifempty=false)
                     end
                 else
                     # Find any weak targets in the vicinity
@@ -192,7 +192,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
                         else
                             # Chase down nearest (can move 2 steps at a time!)
                             agent.shape = :star4
-                            walk!(agent, (2 .* sign.(target .- origin)..., 0), model)
+                            walk!(agent, (2 .* sign.(target .- origin)..., 0), model; ifempty=false)
                         end
                     else
                         # Abandon honour. This is the end
@@ -205,7 +205,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     return
 end
 
-model = battle()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StandardABM with 50 agents of type Fighter
+model = create_battlefield()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StandardABM with 50 agents of type Fighter
  agents container: Dict
  space: GridSpace with size (100, 100, 10), metric=chebyshev, periodic=false
  scheduler: Agents.Schedulers.Randomly</code></pre><h2 id="Let-the-Battle-Begin"><a class="docs-heading-anchor" href="#Let-the-Battle-Begin">Let the Battle Begin</a><a id="Let-the-Battle-Begin-1"></a><a class="docs-heading-anchor-permalink" href="#Let-the-Battle-Begin" title="Permalink"></a></h2><p>We need to write entirely custom plotting here, because we have a 3D space (that would normally be plotted as 3D), but we actually only want to plot the first two dimensions of the space. Thankfully, the infastructure of <code>ABMObservable</code> makes this straightforward.</p><pre><code class="language-julia hljs">abmobs = ABMObservable(model)
@@ -250,9 +250,9 @@ Legend(
     nbanks = 5,
 )
 fig</code></pre><img src="e0613013.png" alt="Example block output"/><p>Now we can step the model and this will reflect the dynamics correctly:</p><pre><code class="language-julia hljs">step!(abmobs, 5)
-fig</code></pre><img src="8171074f.png" alt="Example block output"/><p>Alright, a simple call to the <code>record</code> function can make a video of the process:</p><pre><code class="language-julia hljs">record(fig, &quot;battle.mp4&quot;, 1:200; framerate = 10) do i
+fig</code></pre><img src="280ea669.png" alt="Example block output"/><p>Alright, a simple call to the <code>record</code> function can make a video of the process:</p><pre><code class="language-julia hljs">record(fig, &quot;battle.mp4&quot;, 1:200; framerate = 10) do i
     ax.title = &quot;Battle Royale, step = $(i)&quot;
     step!(abmobs, 1)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;battle.mp4&quot;</code></pre><video width="auto" controls autoplay loop>
 <source src="../battle.mp4" type="video/mp4">
-</video><p>Some interesting behaviour emerges: sometimes you see a group of diamonds chasing one triangle. What ends up happening here is usually a close pair that wishes to fight gets caught out by the weaker one of the two running away from an even stronger opponent. Problem is that this stronger opponent is chasing the stronger of the pair, but since the weakest of the pair is still closer to the newcomer, there is a stalemate. This is usually resolved by hitting a boundary or other opponents.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ants/">« Ants</a><a class="docs-footer-nextpage" href="../social_distancing/">Continuous space social distancing »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 19 July 2024 08:50">Friday 19 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</video><p>Some interesting behaviour emerges: sometimes you see a group of diamonds chasing one triangle. What ends up happening here is usually a close pair that wishes to fight gets caught out by the weaker one of the two running away from an even stronger opponent. Problem is that this stronger opponent is chasing the stronger of the pair, but since the weakest of the pair is still closer to the newcomer, there is a stalemate. This is usually resolved by hitting a boundary or other opponents.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ants/">« Ants</a><a class="docs-footer-nextpage" href="../social_distancing/">Continuous space social distancing »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Sunday 13 October 2024 09:05">Sunday 13 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

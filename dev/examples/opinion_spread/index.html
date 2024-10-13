@@ -60,27 +60,27 @@ function stabilize!(agent)
     end
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">stabilize! (generic function with 1 method)</code></pre><h2 id="Running-the-model"><a class="docs-heading-anchor" href="#Running-the-model">Running the model</a><a id="Running-the-model-1"></a><a class="docs-heading-anchor-permalink" href="#Running-the-model" title="Permalink"></a></h2><p>First, we create a stopping condition, which runs the model until all agents stabilize.</p><pre><code class="language-julia hljs">rununtil(model, s) = count(a -&gt; a.stabilized, allagents(model)) == length(positions(model))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">rununtil (generic function with 1 method)</code></pre><p>Then we create our model, run it and collect some information</p><pre><code class="language-julia hljs">model = create_model(nopinions = 3, levels_per_opinion = 4)
 
-agentdata, _ = run!(model, rununtil, adata = [(:stabilized, count)])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(<span class="sgr1">157×2 DataFrame
+agentdata, _ = run!(model, rununtil, adata = [(:stabilized, count)])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(<span class="sgr1">99×2 DataFrame
  Row │ time   count_stabilized
      │<span class="sgr90"> Int64  Int64
 ─────┼─────────────────────────
    1 │     0                 0
-   2 │     1                50
-   3 │     2                58
-   4 │     3                59
-   5 │     4                61
-   6 │     5                60
-   7 │     6                64
+   2 │     1                54
+   3 │     2                59
+   4 │     3                63
+   5 │     4                57
+   6 │     5                54
+   7 │     6                62
    8 │     7                70
   ⋮  │   ⋮           ⋮
- 151 │   150                86
- 152 │   151                93
- 153 │   152                95
- 154 │   153                96
- 155 │   154                98
- 156 │   155                99
- 157 │   156               100
-</span><span class="sgr36">               142 rows omitted, 0×0 DataFrame)</span></span></code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>The plot shows the number of stable agents, that is, number of agents whose opinions don&#39;t change from one step to the next. Note that the number of stable agents can fluctuate before the final convergence.</p><pre><code class="language-julia hljs">f = Figure(resolution = (600, 400))
+  93 │    92                98
+  94 │    93                96
+  95 │    94                95
+  96 │    95                98
+  97 │    96                98
+  98 │    97                99
+  99 │    98               100
+</span><span class="sgr36">                84 rows omitted, 0×0 DataFrame)</span></span></code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>The plot shows the number of stable agents, that is, number of agents whose opinions don&#39;t change from one step to the next. Note that the number of stable agents can fluctuate before the final convergence.</p><pre><code class="language-julia hljs">f = Figure(resolution = (600, 400))
 ax =
     f[1, 1] = Axis(
         f,
@@ -89,7 +89,7 @@ ax =
         title = &quot;Population Stability&quot;,
     )
 lines!(ax, 1:size(agentdata, 1), agentdata.count_stabilized, linewidth = 2, color = :blue)
-f</code></pre><img src="45f37abb.png" alt="Example block output"/><h2 id="Animation"><a class="docs-heading-anchor" href="#Animation">Animation</a><a id="Animation-1"></a><a class="docs-heading-anchor-permalink" href="#Animation" title="Permalink"></a></h2><p>Here is an animation that shows the stabilization of agent opinions over time.</p><pre><code class="language-julia hljs">ac(agent) = agent.stabilized == true ? :purple : :green
+f</code></pre><img src="826d299e.png" alt="Example block output"/><h2 id="Animation"><a class="docs-heading-anchor" href="#Animation">Animation</a><a id="Animation-1"></a><a class="docs-heading-anchor-permalink" href="#Animation" title="Permalink"></a></h2><p>Here is an animation that shows the stabilization of agent opinions over time.</p><pre><code class="language-julia hljs">ac(agent) = agent.stabilized == true ? :purple : :green
 model = create_model(nopinions = 3, levels_per_opinion = 4)
 
 abmvideo(
@@ -103,4 +103,4 @@ abmvideo(
     title = &quot;Opinion Spread&quot;,
 )</code></pre><video width="auto" controls autoplay loop>
 <source src="../opinion.mp4" type="video/mp4">
-</video></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../runners/">« Mountain Runners</a><a class="docs-footer-nextpage" href="../sugarscape/">Sugarscape »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 19 July 2024 08:50">Friday 19 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</video></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../runners/">« Mountain Runners</a><a class="docs-footer-nextpage" href="../sugarscape/">Sugarscape »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Sunday 13 October 2024 09:05">Sunday 13 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
