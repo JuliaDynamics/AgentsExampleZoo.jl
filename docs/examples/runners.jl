@@ -68,8 +68,7 @@ map_url =
 model = initialize(map_url)
 
 # and plot
-const ABMPlot = Agents.get_ABMPlot_type()
-function Agents.static_preplot!(ax::Axis3, p::ABMPlot)
+function preplot!(ax::Axis3, abmobs)
     return scatter!(ax, model.goal; color = (:red, 50), marker = 'x')
 end
 
@@ -84,6 +83,7 @@ abmvideo(
     agentsplotkwargs = (strokecolor = :white, strokewidth = 2),
     heatarray = model -> penaltymap(model.pathfinder),
     heatkwargs = (colormap = :terrain,),
+    preplot!,
 )
 
 # ```@raw html
